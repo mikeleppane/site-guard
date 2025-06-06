@@ -1,0 +1,12 @@
+check_interval: 30
+log_file: "site_guard.log"
+sites:
+  - url: "https://www.python.org/"
+    content_requirement: "Python"
+    timeout: 10
+  - url: "https://www.rust-lang.org/"
+    content_requirement: "Rust"
+    timeout: 15
+  - url: "https://www.modular.com/mojo"
+    content_requirement: "Modular"
+    timeout: 5
