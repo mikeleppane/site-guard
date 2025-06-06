@@ -30,6 +30,8 @@ repos:
     rev: v1.16.0
     hooks:
       - id: mypy
+        language: python
+        types_or': [python]
 
   - repo: https://github.com/codespell-project/codespell
     rev: v2.4.1

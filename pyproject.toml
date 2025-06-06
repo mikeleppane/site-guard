@@ -9,9 +9,12 @@ keywords = ["site", "guard", "monitoring"]
 
 authors = [{ name = "Mikko Leppänen", email = "mleppan23@gmail.com" }]
 dependencies = [
+    "aiohttp>=3.12.9",
     "beautifulsoup4>=4.13.4",
     "click>=8.2.1",
+    "loguru>=0.7.3",
     "pydantic>=2.11.5",
+    "pyyaml>=6.0.2",
     "requests>=2.32.3",
 ]
 
@@ -27,7 +30,7 @@ dev = [
 ]
 
 [tool.ruff]
-select = [
+lint.select = [
     "E",    # pycodestyle errors
     "F",    # Pyflakes
     "B",    # flake8-bugbear
@@ -53,13 +56,13 @@ select = [
     "T20", # flake8-print (catches print statements)
 ]
 
-ignore = [
+lint.ignore = [
     "E501", # line-too-long
 ]
 
 # Allow autofix for all enabled rules (when `--fix`) is provided.
 # Allow autofix for all enabled rules (when `--fix`) is provided.
-fixable = [
+lint.fixable = [
     "E",
     "F",
     "B",
@@ -79,19 +82,19 @@ fixable = [
     # Add FURB to fixable since it's in select
     "FURB",
 ]
-unfixable = []
+lint.unfixable = []
 
 # Exclude a variety of commonly ignored directories.
-exclude = [".git", ".mypy_cache", ".ruff_cache"]
-per-file-ignores = {}
+lint.exclude = [".git", ".mypy_cache", ".ruff_cache"]
+lint.per-file-ignores = {}
 
 # Same as Black.
 line-length = 100
 
 # Allow unused variables when underscore-prefixed.
-dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+lint.dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 
-[tool.ruff.mccabe]
+[tool.ruff.lint.mccabe]
 max-complexity = 8
 
 [tool.mypy]
@@ -106,7 +109,6 @@ strict_equality = true
 no_implicit_optional = true
 # Add these for better strictness:
 disallow_any_generics = true
-disallow_subclassing_any = true
 disallow_incomplete_defs = true
 
 # warnings
