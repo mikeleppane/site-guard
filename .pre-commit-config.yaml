@@ -30,6 +30,7 @@ repos:
     rev: v1.16.0
     hooks:
       - id: mypy
+        additional_dependencies: [types-requests, types-pyyaml]
         language: python
         types_or': [python]
 
