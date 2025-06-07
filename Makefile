@@ -3,6 +3,10 @@ TEST_DIR = ./tests
 
 .PHONY: check fix run
 
+format:
+	uv run ruff format $(SRC_DIR) $(TEST_DIR)
+	uv run isort $(SRC_DIR) $(TEST_DIR)
+
 check:
 	uv run mypy --version
 	uv run mypy $(SRC_DIR) $(TEST_DIR)
