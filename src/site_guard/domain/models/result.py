@@ -2,7 +2,7 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
-from site_guard.models.status import CheckStatus
+from site_guard.domain.models.status import CheckStatus
 
 
 class SiteCheckResult(BaseModel):

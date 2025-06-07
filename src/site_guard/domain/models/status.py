@@ -1,10 +1,11 @@
-import enum
+from enum import StrEnum
 
 
-class CheckStatus(enum.Enum):
+class CheckStatus(StrEnum):
     """Status of a site check."""
 
-    SUCCESS = "success"
-    CONNECTION_ERROR = "connection_error"
-    CONTENT_ERROR = "content_error"
-    TIMEOUT_ERROR = "timeout_error"
+    SUCCESS = "SUCCESS"
+    CONNECTION_ERROR = "CONNECTION_ERROR"
+    CONTENT_ERROR = "CONTENT_ERROR"
+    TIMEOUT_ERROR = "TIMEOUT_ERROR"
+    SERVER_ERROR = "SERVER_ERROR"
