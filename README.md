@@ -2,7 +2,7 @@
 
 A modern, asynchronous website monitoring tool that helps administrators detect problems on their sites by periodically checking availability and content requirements.
 
-[![Python](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
+[![Python](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Code style: ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
@@ -15,13 +15,15 @@ A modern, asynchronous website monitoring tool that helps administrators detect 
 - **Error Classification**: Distinguishes between connection errors and content validation failures
 - **Performance Metrics**: Measures and reports response times for each check
 - **Log Rotation**: Automatic log rotation and compression to manage disk space
-- **Type Safety**: Full type annotations with mypy compliance
-- **Clean Architecture**: Domain-driven design with clear separation of concerns
 
 ## 📋 Requirements
 
-- Python 3.12 or higher
+- Python 3.11 or higher
 - Internet connection for monitoring external sites
+
+⚠️ This project has been developed and tested with Python 3.13 on Ubuntu 24.04 LTS. On Windows, it should work as well, but it has not been tested yet.
+
+# emoji for heads-up
 
 ## 🔧 Installation
 
@@ -41,6 +43,19 @@ cd site-guard
 pip install -e ".[dev]"
 pre-commit install
 ```
+
+Makefile commands for development: if you have `make` installed, you can use the following commands to manage the project:
+
+```bash
+make test             # Run all tests
+make test-unit        # Run unit tests only
+make test-integration # Run integration tests only
+make check            # Run linters source + tests
+make check-only-src   # Run linters on source code only
+make format           # Format code with ruff-format
+```
+
+make can be install on Ubuntu with `sudo apt install make`, on macOS with `brew install make`, and on Windows with `choco install make`.
 
 ## 🚦 Quick Start
 
@@ -116,11 +131,16 @@ sites:
 Site Guard provides colorized console output showing the status of each check:
 
 ```
-2025-06-06 10:30:00 | INFO     | Starting site monitoring with 3 sites
-2025-06-06 10:30:00 | INFO     | Check interval: 30 seconds
-2025-06-06 10:30:01 | SUCCESS  | ✓ https://example.com - 245ms
-2025-06-06 10:30:01 | WARNING  | ✗ https://broken-site.com - connection_error: HTTP 404: Not Found
-2025-06-06 10:30:02 | INFO     | Monitoring round completed: 2 successful, 1 failed
+2025-06-08 19:11:51.860 | INFO     | site_guard.main:main:49 - Site Guard starting...
+2025-06-08 19:11:51 | INFO     | site_guard.application.monitoring_app:run:39 - Starting site monitoring with 5 sites
+2025-06-08 19:11:51 | INFO     | site_guard.application.monitoring_app:run:40 - Check interval: 30.0 seconds
+2025-06-08 19:11:51 | INFO     | site_guard.application.monitoring_app:run:51 - Starting monitoring round...
+2025-06-08 19:11:52 | INFO     | site_guard.application.monitoring_app:run:59 - PASS ✓: https://www.python.org/ - 229ms
+2025-06-08 19:11:52 | INFO     | site_guard.application.monitoring_app:run:59 - PASS ✓: https://go.dev/ - 397ms
+2025-06-08 19:11:52 | WARNING  | site_guard.application.monitoring_app:run:65 - FAIL ✗: https://www.modular.com/mojo23232 - CONNECTION_ERROR: HTTP 404: Not Found
+2025-06-08 19:11:52 | INFO     | site_guard.application.monitoring_app:run:59 - PASS ✓: https://httpbin.org/html - 704ms
+2025-06-08 19:11:52 | INFO     | site_guard.application.monitoring_app:run:59 - PASS ✓: https://www.rust-lang.org/ - 706ms
+2025-06-08 19:11:52 | INFO     | site_guard.application.monitoring_app:run:68 - Monitoring round completed: 4 successful, 1 failed
 ```
 
 ### Log Files
@@ -163,22 +183,22 @@ src/site_guard/
 ```bash
 pytest
 pytest --cov=site_guard --cov-report=html
+make test
+make test-unit # Run unit tests only
+make test-integration # Run integration tests only
 ```
 
 ### Code Quality
 
 ```bash
 # Format code
-ruff format .
+make format
 
 # Lint code
-ruff check . --fix
+make check-only-src  # `make check` to run linters against both source and tests
 
-# Type checking
-mypy src/
-
-# Run all pre-commit hooks
-pre-commit run --all-files
+# Run tests
+make test
 ```
 
 ### Project Structure
@@ -201,6 +221,24 @@ Site Guard classifies errors into distinct categories:
 
 ## 📝 Examples
 
+### Help
+
+```bash
+Usage: site-guard [OPTIONS]
+
+  Site Guard - Monitor website availability and content.
+
+Options:
+  -c, --config PATH       Path to configuration file (YAML or JSON)
+                          [required]
+  -i, --interval INTEGER  Check interval in seconds (overrides config file
+                          setting)
+  -v, --verbose           Enable verbose logging
+  --log-file TEXT         Application log file (separate from monitoring
+                          results log), defaults to 'site_guard.log'
+  --help                  Show this message and exit.
+```
+
 ### Basic Monitoring
 
 ```bash
@@ -218,6 +256,82 @@ site-guard --config critical-sites.yaml --interval 10 --verbose
 ```bash
 site-guard --config production.yaml --log-file /var/log/site-guard/app.log
 ```
+
+## 🗺️ Future Features & Roadmap
+
+The following features are planned for future releases to enhance Site Guard's capabilities:
+
+### 🔔 Phase 1: Alerting & Notifications
+- [ ] **Email Notifications** - Send alerts when sites go down
+- [ ] **Slack Integration** - Post monitoring alerts to Slack channels
+- [ ] **SMS Alerts** - Critical failure notifications via SMS
+- [ ] **Alert Thresholds** - Configurable failure count before alerting
+
+### 📊 Phase 2: Metrics & Analytics
+- [ ] **Prometheus Integration** - Export metrics for Grafana dashboards
+- [ ] **Uptime Tracking** - Calculate and display uptime percentages
+- [ ] **Response Time Trends** - Historical performance analysis
+- [ ] **Performance Baselines** - Detect performance degradation
+
+### 🗄️ Phase 3: Data Persistence
+- [ ] **Database Storage** - PostgreSQL/SQLite for historical data
+- [ ] **Data Retention Policies** - Automatic cleanup of old records
+- [ ] **Export/Import Tools** - Backup and restore monitoring data
+
+### 🌐 Phase 4: Advanced HTTP Features
+- [ ] **Custom Headers** - Support for authentication headers
+- [ ] **Basic/Bearer Auth** - Built-in authentication support
+- [ ] **Cookie Handling** - Session-based monitoring
+
+### 🔍 Phase 5: Enhanced Content Validation
+- [ ] **CSS Selectors** - Check for specific DOM elements
+- [ ] **XPath Support** - Advanced content location
+- [ ] **JSON Path Validation** - API response validation
+- [ ] **Response Size Limits** - Monitor payload sizes
+- [ ] **Image/Binary Content** - Check for media availability
+- [ ] **Form Submission Testing** - Validate form endpoints
+
+### 📋 Phase 6: Status Pages & Dashboards
+- [ ] **Public Status Pages** - Generate HTML status pages
+- [ ] **Real-time Web Dashboard** - Live monitoring interface
+- [ ] **Mobile-Responsive UI** - Monitor from any device
+- [ ] **Custom Branding** - Branded status pages
+- [ ] **Incident Timeline** - Historical incident tracking
+
+### 🌍 Phase 7: Geographic & Load Testing
+- [ ] **Multi-Region Monitoring** - Check from different locations
+- [ ] **Load Testing** - Basic performance testing capabilities
+- [ ] **CDN Performance** - Global endpoint monitoring
+- [ ] **Network Path Analysis** - Trace route diagnostics
+
+### 🎯 Phase 8: Smart Features
+- [ ] **Intelligent Scheduling** - Adaptive check intervals
+- [ ] **Dependency Tracking** - Monitor service dependencies
+- [ ] **Anomaly Detection** - AI-based issue detection
+- [ ] **Predictive Alerts** - Early warning systems
+- [ ] **Auto-Recovery Testing** - Validate service recovery
+
+### 🔌 Phase 9: Integrations & Extensibility
+- [ ] **Plugin System** - Extensible architecture
+- [ ] **Webhook Support** - Custom notification endpoints
+- [ ] **API Endpoints** - REST API for external integrations
+- [ ] **Datadog Integration** - Export to monitoring platforms
+- [ ] **New Relic Support** - APM platform integration
+- [ ] **Docker Health Checks** - Container monitoring
+
+### Contributing to Features
+
+We welcome contributions! If you're interested in implementing any of these features:
+
+1. Check the [issues](https://github.com/your-repo/site-guard/issues) for existing discussions
+2. Create a feature request issue for new ideas
+3. Join the discussion on implementation approach
+4. Submit a PR with your implementation
+
+---
+
+**Have ideas for other features?** [Open an issue](https://github.com/your-repo/site-guard/issues/new) and let's discuss!
+
 
 ## 🤝 Contributing
 
