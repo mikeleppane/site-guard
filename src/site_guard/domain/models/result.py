@@ -1,14 +1,12 @@
 from collections.abc import Sequence
-from dataclasses import dataclass
 from datetime import datetime
 
-from pydantic import HttpUrl, NonNegativeInt, field_serializer
+from pydantic import BaseModel, HttpUrl, NonNegativeInt, field_serializer
 
 from site_guard.domain.models.status import CheckStatus
 
 
-@dataclass(frozen=True)
-class SiteCheckResult:
+class SiteCheckResult(BaseModel):
     """Result of a site availability check."""
 
     url: HttpUrl
@@ -17,6 +15,8 @@ class SiteCheckResult:
     timestamp: datetime
     error_message: str | None = None
     failed_content_requirements: Sequence[str] | None = None
+
+    model_config = {"frozen": True}
 
     @property
     def is_success(self) -> bool:

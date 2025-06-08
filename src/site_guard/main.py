@@ -27,6 +27,16 @@ def load_config(config_path: Path) -> MonitoringConfig:
         raise click.Abort() from e
 
 
+def create_application_logger(cli_log_file: str | None, config_log_file: str | None) -> FileLogger:
+    """Create and configure the application logger."""
+    app_log_file = "site_guard.log"
+    if cli_log_file is not None:
+        app_log_file = cli_log_file
+    elif config_log_file is not None:
+        app_log_file = config_log_file
+    return FileLogger(log_file_path=app_log_file)
+
+
 @click.command()
 @click.option(
     "--config",
@@ -51,19 +61,13 @@ def main(config: Path, interval: int | None, verbose: bool, log_file: str | None
     setup_logging(verbose)
     app_config = load_config(config)
 
-    app_log_file = "site_guard.log"
-    if log_file is not None:
-        app_log_file = log_file
-    elif app_config.log_file is not None:
-        app_log_file = app_config.log_file
-    file_logger = FileLogger(log_file_path=app_log_file)
-
-    # Override log file if provided via CLI
-
+    io_logger = create_application_logger(
+        cli_log_file=log_file, config_log_file=app_config.log_file
+    )
     site_checker = HttpSiteChecker()
     app = MonitoringApplication(
         config=app_config,
-        io_logger=file_logger,
+        io_logger=io_logger,
         site_checker=site_checker,
     )
 

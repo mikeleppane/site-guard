@@ -1,7 +1,7 @@
 from datetime import datetime
 
 import pytest
-from pydantic import HttpUrl
+from pydantic import HttpUrl, ValidationError
 
 from site_guard.domain.models.result import SiteCheckResult
 from site_guard.domain.models.status import CheckStatus
@@ -96,8 +96,8 @@ def test_result_immutability() -> None:
     )
 
     # Should not be able to modify fields
-    with pytest.raises(AttributeError):
+    with pytest.raises(ValidationError):
         result.url = HttpUrl("https://different.com")  # type: ignore[misc,unused-ignore]
 
-    with pytest.raises(AttributeError):
+    with pytest.raises(ValidationError):
         result.status = CheckStatus.CONNECTION_ERROR  # type: ignore[misc,unused-ignore]
