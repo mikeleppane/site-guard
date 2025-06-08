@@ -24,6 +24,15 @@ fix:
 test:
 	uv run pytest -v $(TEST_DIR)
 
+test-unit:
+	uv run pytest -v -s $(TEST_DIR)/unit
+
+test-integration:
+	uv run pytest -v -s $(TEST_DIR)/integration
+
+test-stdout:
+	uv run pytest -v -s $(TEST_DIR)
+
 test-cov:
 	uv run pytest --cov=$(SRC_DIR) --cov-report=term-missing --cov-report=html $(TEST_DIR)
 
