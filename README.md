@@ -158,12 +158,13 @@ Monitoring results are saved to structured JSON logs:
 }
 ```
 
-## 🏗️ Architecture
+## 🏗️ Project Structure
 
 Site Guard follows clean architecture principles with clear separation of concerns:
 
 ```
 src/site_guard/
+├── main.py              # Entry point for the CLI application
 ├── domain/              # Business logic and rules
 │   ├── models/         # Data models (SiteConfig, CheckResult)
 │   ├── services/       # Service interfaces
@@ -174,7 +175,229 @@ src/site_guard/
     ├── http/          # HTTP client implementation
     ├── persistence/   # Configuration and logging
     └── logging/       # Logging setup
+└── tests/             # Unit and integration tests
+    ├── unit/          # Unit tests for domain logic
+    └── integration/   # Integration tests for application behavior
 ```
+
+## 🏗️ Architecture
+
+### Architecture Diagram
+
+```mermaid
+graph TB
+    %% Entry Point
+    CLI["`**CLI Entry Point**
+    main.py
+    Click Commands`"]
+
+    %% Application Layer
+    APP["`**Application Layer**
+    MonitoringApplication
+    Orchestrates monitoring workflow`"]
+
+    %% Domain Layer
+    subgraph DOMAIN["`**Domain Layer (Business Logic)**`"]
+        MODELS["`**Models**
+        • SiteConfig
+        • SiteCheckResult
+        • CheckStatus
+        • ContentRequirement`"]
+
+        SERVICES["`**Services**
+        • MonitoringService
+        • SiteChecker (Interface)`"]
+
+        REPOS["`**Repositories**
+        • ConfigLoader (Interface)`"]
+    end
+
+    %% Infrastructure Layer
+    subgraph INFRA["`**Infrastructure Layer**`"]
+        HTTP["`**HTTP Client**
+        HttpSiteChecker
+        aiohttp session management`"]
+
+        CONFIG["`**Configuration**
+        FileConfigLoader
+        YAML/JSON parsing`"]
+
+        LOGGING["`**Logging**
+        • FileLogger
+        • LogRotation
+        • Loguru integration`"]
+
+        PERSIST["`**Persistence**
+        File-based storage`"]
+    end
+
+    %% External Systems
+    subgraph EXTERNAL["`**External Systems**`"]
+        WEBSITES["`**Target Websites**
+        HTTP/HTTPS endpoints`"]
+
+        FILES["`**File System**
+        • Config files
+        • Log files`"]
+    end
+
+    %% Data Flow
+    CLI --> APP
+    APP --> SERVICES
+    APP --> CONFIG
+    APP --> LOGGING
+
+    SERVICES --> HTTP
+    SERVICES --> MODELS
+
+    HTTP --> WEBSITES
+    CONFIG --> FILES
+    LOGGING --> FILES
+
+    %% Dependencies
+    HTTP -.-> MODELS
+    CONFIG -.-> MODELS
+    LOGGING -.-> MODELS
+
+    %% Styling
+    classDef entryPoint fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef application fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef domain fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
+    classDef infrastructure fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    classDef external fill:#fce4ec,stroke:#880e4f,stroke-width:2px
+
+    class CLI entryPoint
+    class APP application
+    class DOMAIN,MODELS,SERVICES,REPOS domain
+    class INFRA,HTTP,CONFIG,LOGGING,PERSIST infrastructure
+    class EXTERNAL,WEBSITES,FILES external
+```
+
+### 🔄 Data Flow Diagram
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant CLI as CLI (main.py)
+    participant App as MonitoringApplication
+    participant Config as FileConfigLoader
+    participant Monitor as MonitoringService
+    participant Checker as HttpSiteChecker
+    participant Logger as FileLogger
+    participant Sites as Target Websites
+
+    User->>CLI: site-guard --config config.yaml
+    CLI->>App: Initialize application
+    App->>Config: Load configuration
+    Config-->>App: Return MonitoringConfig
+
+    loop Every check_interval
+        App->>Monitor: monitor_sites(sites)
+
+        par Concurrent site checks
+            Monitor->>Checker: check_site(site1)
+            Checker->>Sites: HTTP Request
+            Sites-->>Checker: HTTP Response
+            Checker-->>Monitor: SiteCheckResult
+
+        and
+            Monitor->>Checker: check_site(site2)
+            Checker->>Sites: HTTP Request
+            Sites-->>Checker: HTTP Response
+            Checker-->>Monitor: SiteCheckResult
+        end
+
+        Monitor->>Logger: log_result(result)
+        Logger->>Logger: Write to file
+        Monitor-->>App: Yield results
+        App->>CLI: Display status
+        CLI->>User: Console output
+    end
+```
+
+### 🧩 Component Interaction
+
+```mermaid
+graph LR
+    subgraph "Clean Architecture Layers"
+        subgraph "Domain Layer"
+            D1[Models]
+            D2[Services]
+            D3[Repositories]
+        end
+
+        subgraph "Application Layer"
+            A1[MonitoringApp]
+        end
+
+        subgraph "Infrastructure Layer"
+            I1[HTTP Client]
+            I2[File Config]
+            I3[File Logger]
+        end
+
+        subgraph "Interface Layer"
+            U1[CLI]
+        end
+    end
+
+    %% Dependencies (inner depends on outer)
+    U1 --> A1
+    A1 --> D2
+    A1 --> D3
+    I1 -.-> D2
+    I2 -.-> D3
+    I3 -.-> D2
+
+    D2 --> D1
+    D3 --> D1
+
+    %% Styling
+    classDef domain fill:#e8f5e8,stroke:#2e7d32
+    classDef application fill:#f3e5f5,stroke:#7b1fa2
+    classDef infrastructure fill:#fff3e0,stroke:#f57c00
+    classDef interface fill:#e3f2fd,stroke:#1565c0
+
+    class D1,D2,D3 domain
+    class A1 application
+    class I1,I2,I3 infrastructure
+    class U1 interface
+```
+
+### 🔧 Configuration Flow
+
+```mermaid
+flowchart TD
+    Start([User runs site-guard]) --> LoadConfig{Load config file}
+    LoadConfig -->|YAML/JSON| ParseConfig[Parse configuration]
+    ParseConfig --> ValidateConfig{Validate config}
+    ValidateConfig -->|Valid| CreateObjects[Create monitoring objects]
+    ValidateConfig -->|Invalid| Error[Display error & exit]
+
+    CreateObjects --> SetupLogging[Setup logging]
+    SetupLogging --> StartMonitoring[Start monitoring loop]
+
+    StartMonitoring --> CheckSites[Check all sites concurrently]
+    CheckSites --> LogResults[Log results]
+    LogResults --> DisplayStatus[Display console status]
+    DisplayStatus --> Wait[Wait for next interval]
+    Wait --> CheckSites
+
+    CheckSites -->|Keyboard Interrupt| Cleanup[Cleanup resources]
+    Cleanup --> Exit([Exit application])
+
+    %% Styling
+    classDef process fill:#e1f5fe,stroke:#0277bd
+    classDef decision fill:#fff3e0,stroke:#f57c00
+    classDef error fill:#ffebee,stroke:#c62828
+    classDef terminal fill:#e8f5e8,stroke:#388e3c
+
+    class ParseConfig,CreateObjects,SetupLogging,CheckSites,LogResults,DisplayStatus,Wait,Cleanup process
+    class LoadConfig,ValidateConfig decision
+    class Error error
+    class Start,Exit terminal
+```
+
 
 ## 🧪 Development
 
