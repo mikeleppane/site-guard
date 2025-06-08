@@ -16,7 +16,15 @@ from site_guard.infrastructure.persistence.config import FileConfigLoader
 
 def load_config(config_path: Path) -> MonitoringConfig:
     """Load configuration from the specified path."""
-    return FileConfigLoader().load_config(config_path=config_path)
+    from loguru import logger
+
+    try:
+        return FileConfigLoader().load_config(config_path=config_path)
+    except Exception as e:
+        logger.error(
+            f"Failed to load configuration from {config_path}: {e}.\n\nPlease check your config file."
+        )
+        raise click.Abort() from e
 
 
 @click.command()
