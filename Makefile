@@ -43,7 +43,7 @@ test-stdout:
 	uv run pytest -v -s $(TEST_DIR)
 
 test-cov:
-	uv run pytest --cov=$(SRC_DIR) --cov-report=term-missing --cov-report=html $(TEST_DIR)
+	uv run pytest --cov=$(SRC_DIR) --cov-report=term-missing --cov-report=html --cov-branch $(TEST_DIR)
 
 help:
 	uv run python src/library_db/app.py --help
