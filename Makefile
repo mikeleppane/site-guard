@@ -16,6 +16,15 @@ check:
 	uv run isort --version
 	uv run isort --check-only $(SRC_DIR) $(TEST_DIR)
 
+check-only-src:
+	uv run mypy --version
+	uv run mypy $(SRC_DIR)
+	uv run ruff --version
+	uv run ruff check $(SRC_DIR)
+	uv run ruff format --check $(SRC_DIR)
+	uv run isort --version
+	uv run isort --check-only $(SRC_DIR)
+
 fix:
 	uv run ruff format $(SRC_DIR) $(TEST_DIR)
 	uv run isort $(SRC_DIR) $(TEST_DIR)
