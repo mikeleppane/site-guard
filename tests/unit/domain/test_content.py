@@ -107,7 +107,7 @@ def test_content_requirement_immutability() -> None:
 
     # Should not be able to modify fields
     with pytest.raises(ValidationError):
-        req.pattern = "Java"
+        req.pattern = "Java"  # type: ignore[misc]
 
     with pytest.raises(ValidationError):
         req.use_wildcards = True  # type: ignore[misc]
