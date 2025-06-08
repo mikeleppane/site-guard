@@ -7,8 +7,16 @@ import click
 from loguru import logger
 
 from site_guard.application.monitoring_app import MonitoringApplication
+from site_guard.domain.models.config import MonitoringConfig
+from site_guard.infrastructure.http.checker import HttpSiteChecker
+from site_guard.infrastructure.logging.logger import FileLogger
 from site_guard.infrastructure.logging.setup import setup_logging
 from site_guard.infrastructure.persistence.config import FileConfigLoader
+
+
+def load_config(config_path: Path) -> MonitoringConfig:
+    """Load configuration from the specified path."""
+    return FileConfigLoader().load_config(config_path=config_path)
 
 
 @click.command()
@@ -30,15 +38,29 @@ from site_guard.infrastructure.persistence.config import FileConfigLoader
 )
 def main(config: Path, interval: int | None, verbose: bool, log_file: str | None) -> None:
     """Site Guard - Monitor website availability and content."""
-    setup_logging(verbose, log_file)
-
     logger.info("Site Guard starting...")
 
-    config_loader = FileConfigLoader()
-    app = MonitoringApplication(config_loader=config_loader)
+    setup_logging(verbose)
+    app_config = load_config(config)
+
+    app_log_file = "site_guard.log"
+    if log_file is not None:
+        app_log_file = log_file
+    elif app_config.log_file is not None:
+        app_log_file = app_config.log_file
+    file_logger = FileLogger(log_file_path=app_log_file)
+
+    # Override log file if provided via CLI
+
+    site_checker = HttpSiteChecker()
+    app = MonitoringApplication(
+        config=app_config,
+        io_logger=file_logger,
+        site_checker=site_checker,
+    )
 
     try:
-        asyncio.run(app.run(config, interval))
+        asyncio.run(app.run(interval))
     except KeyboardInterrupt:
         logger.info("Monitoring stopped by user")
         click.echo("\nMonitoring stopped.")

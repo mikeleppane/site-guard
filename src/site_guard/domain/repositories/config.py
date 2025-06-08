@@ -8,5 +8,5 @@ from site_guard.domain.models.config import MonitoringConfig
 class ConfigLoader(Protocol):
     """Protocol for loading configuration from a file."""
 
-    async def load_config(self, config_path: Path) -> MonitoringConfig:
+    def load_config(self, config_path: Path) -> MonitoringConfig:
         """Load configuration from the specified path."""
