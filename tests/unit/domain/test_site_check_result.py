@@ -17,7 +17,7 @@ def test_create_successful_result() -> None:
         timestamp=timestamp,
     )
 
-    assert str(result.url) == "https://example.com"
+    assert str(result.url) == "https://example.com/"
     assert result.status == CheckStatus.SUCCESS
     assert result.response_time_ms == 250
     assert result.timestamp == timestamp
@@ -37,7 +37,7 @@ def test_create_error_result() -> None:
         failed_content_requirements=["Python", "programming"],
     )
 
-    assert str(result.url) == "https://example.com"
+    assert str(result.url) == "https://example.com/"
     assert result.status == CheckStatus.CONNECTION_ERROR
     assert result.response_time_ms == 5000
     assert result.error_message == "Connection timeout"
@@ -97,7 +97,7 @@ def test_result_immutability() -> None:
 
     # Should not be able to modify fields
     with pytest.raises(AttributeError):
-        result.url = HttpUrl("https://different.com")  # type: ignore[misc]
+        result.url = HttpUrl("https://different.com")  # type: ignore[misc,unused-ignore]
 
     with pytest.raises(AttributeError):
-        result.status = CheckStatus.CONNECTION_ERROR  # type: ignore[misc]
+        result.status = CheckStatus.CONNECTION_ERROR  # type: ignore[misc,unused-ignore]
