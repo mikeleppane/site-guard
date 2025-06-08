@@ -23,6 +23,7 @@ repos:
     rev: v0.11.13
     hooks:
       - id: ruff-check
+        args: [--ignore=S101]
         language_version: python3.13
         types: [python]
 
@@ -31,8 +32,9 @@ repos:
     hooks:
       - id: mypy
         additional_dependencies: [types-requests, types-pyyaml]
+        arguments: ["--config-file=./pyproject.toml"]
         language: python
-        types_or': [python]
+        types: [python]
 
   - repo: https://github.com/codespell-project/codespell
     rev: v2.4.1
