@@ -24,6 +24,8 @@ dev = [
     "mypy>=1.16.0",
     "pre-commit>=4.2.0",
     "pytest>=8.4.0",
+    "pytest-aiohttp>=1.1.0",
+    "pytest-asyncio>=1.0.0",
     "pytest-cov>=6.1.1",
     "ruff>=0.11.13",
     "types-pyyaml>=6.0.12.20250516",
@@ -85,10 +87,17 @@ lint.fixable = [
 ]
 lint.unfixable = []
 
+lint.per-file-ignores = { "tests/*" = [
+    "S101",
+    "RUF029",
+], "*/test_*.py" = [
+    "S101",
+    "RUF029",
+] }
+
+# Allow assert statements in tests"*/test_*.py" = ["S101"],  # Also allow in test files following naming pattern
 # Exclude a variety of commonly ignored directories.
 lint.exclude = [".git", ".mypy_cache", ".ruff_cache"]
-lint.per-file-ignores = {}
-
 # Allow unused variables when underscore-prefixed.
 lint.dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 
@@ -121,6 +130,7 @@ warn_return_any = true
 
 ignore_missing_imports = true
 
+plugins = ['pydantic.mypy']
 
 [tool.isort]
 profile = "black"
