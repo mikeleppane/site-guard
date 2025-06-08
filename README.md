@@ -5,6 +5,8 @@ A modern, asynchronous website monitoring tool that helps administrators detect 
 [![Python](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Code style: ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+[![CI](https://github.com/mikeleppane/site-guard/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/mikeleppane/site-guard/actions/workflows/ci.yml)
+
 
 ## 🚀 Features
 
