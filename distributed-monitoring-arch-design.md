@@ -2,9 +2,9 @@
 
 ## Introduction
 
-This document outlines the architecture design for a distributed monitoring system capable of tracking connectivity and latency metrics across multiple geographically dispersed locations. The system is designed to provide real-time visibility into network performance and service availability from a global perspective, consolidating data from various monitoring agents into a centralized reporting platform. Overall, it's underlying architecture will much different than original single-node monitoring systems, as it needs to handle data from multiple sources, ensure secure transmission, and provide real-time insights across different regions.
+This document outlines the architectural design of a distributed monitoring system that can track connectivity and latency metrics across multiple geographically dispersed locations. The system aims to provide real-time visibility into network performance and service availability from a global perspective, consolidating data from various monitoring agents into a centralized reporting platform. Its architecture will significantly differ from traditional single-node monitoring systems, as it must handle data from multiple sources, ensure secure transmission, and provide real-time insights across different regions.
 
-For demonstration purposes, we will assume that this system will build on top of Azure and consider three regions: East-US (Virginia), UK West (Cardiff), and West US  (California). Each region will have its own monitoring agent that collects data from local sites and sends it to a central command for aggregation and analysis.
+For demonstration purposes, we will assume that this system will be built on Microsoft Azure and will focus on three regions: East US (Virginia), UK West (Cardiff), and West US (California). Each region will have its own monitoring agent that collects data from local sites and sends it to a central command for aggregation and analysis.
 
 ## Architecture Diagram
 

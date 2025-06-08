@@ -48,7 +48,8 @@ repos:
     rev: v2.4.1
     hooks:
       - id: codespell
-        exclude: tests/
+        exclude: "tests/|.md"
+
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
