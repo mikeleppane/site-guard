@@ -19,6 +19,14 @@ class InvalidJsonConfigError(Exception):
         self.message = message
 
 
+class InvalidFileFormatError(Exception):
+    """Custom exception for unsupported file formats."""
+
+    def __init__(self, message: str):
+        super().__init__(message)
+        self.message = message
+
+
 class FileConfigLoader(ConfigLoader):
     """File-based configuration repository."""
 
@@ -28,18 +36,21 @@ class FileConfigLoader(ConfigLoader):
             raise FileNotFoundError(f"Configuration file not found: {config_path}")
 
         content = config_path.read_text(encoding="utf-8")
-
-        if config_path.suffix.lower() in (".yaml", ".yml"):
-            data = yaml.safe_load(content)
-        elif config_path.suffix.lower() == ".json":
-            try:
-                data = json.loads(content)
-            except (json.JSONDecodeError, TypeError) as e:
-                raise InvalidJsonConfigError(
-                    f"Invalid JSON configuration: {e}. Please check your config file"
-                ) from e
-        else:
-            raise ValueError(f"Unsupported configuration file format: {config_path.suffix}")
+        match config_path.suffix.lower():
+            case ".yaml" | ".yml":
+                data = yaml.safe_load(content)
+            case ".json":
+                try:
+                    data = json.loads(content)
+                except (json.JSONDecodeError, TypeError) as e:
+                    raise InvalidJsonConfigError(
+                        f"Invalid JSON configuration: {e}. Please check your config file"
+                    ) from e
+            case _:
+                raise InvalidFileFormatError(
+                    f"Unsupported configuration file format: {config_path.suffix}. "
+                    "Supported formats are .yaml, .yml, and .json."
+                )
         try:
             config: MonitoringConfig = MonitoringConfig.model_validate(data)
             return config
