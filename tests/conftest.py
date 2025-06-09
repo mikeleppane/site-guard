@@ -17,6 +17,7 @@ from site_guard.domain.models.content import ContentRequirement
 from site_guard.domain.models.result import SiteCheckResult
 from site_guard.domain.models.status import CheckStatus
 from site_guard.domain.services.monitoring import MonitoringService
+from site_guard.infrastructure.persistence.config import FileConfigLoader
 
 
 @pytest.fixture
@@ -120,6 +121,12 @@ def mock_site_checker() -> AsyncMock:
 def mock_logger() -> AsyncMock:
     """Mock logger."""
     return AsyncMock()
+
+
+@pytest.fixture
+def file_config_loader() -> FileConfigLoader:
+    """Mock logger."""
+    return FileConfigLoader()
 
 
 @pytest.fixture
