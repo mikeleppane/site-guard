@@ -32,11 +32,12 @@ async def test_monitoring_application_should_catch_successful_request_(
     config_data = {
         "check_interval": 1,
         "log_file": str(temp_log_file),
+        "retry": {"enabled": True, "max_attempts": 3, "delay_seconds": 1, "strategy": "fixed"},
         "sites": [
             {
                 "url": "https://httpbin.org/html",
                 "content_requirements": ["Herman Melville"],
-                "timeout": 3,
+                "timeout": 5,
                 "require_all_content": True,
             },
         ],

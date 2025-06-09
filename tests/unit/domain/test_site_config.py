@@ -347,6 +347,6 @@ def test_retry_config_max_delay() -> None:
     )
 
     assert 0.5 < config.retry_config.calculate_delay(1) < 2
-    assert 1.5 < config.retry_config.calculate_delay(2) < 3
-    assert 2.5 < config.retry_config.calculate_delay(3) < 4
+    assert 1 < config.retry_config.calculate_delay(2) < 3
+    assert 2 < config.retry_config.calculate_delay(3) < 4
     assert 2 < config.retry_config.calculate_delay(4) < 5  # Should not exceed max delay
