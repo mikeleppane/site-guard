@@ -2,7 +2,7 @@
 
 A modern, asynchronous website monitoring tool that helps administrators detect problems on their sites by periodically checking availability and content requirements.
 
-[![Python](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![Python](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Code style: ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![mypy checked](https://img.shields.io/badge/mypy-checked-blue.svg)](https://mypy.readthedocs.io/)
@@ -19,9 +19,10 @@ A modern, asynchronous website monitoring tool that helps administrators detect 
 - **Error Classification**: Distinguishes between connection errors and content validation failures
 - **Performance Metrics**: Measures and reports response times for each check
 - **Log Rotation**: Automatic log rotation and compression to manage disk space
+- **Retry Mechanism**: Configurable retries for transient errors
 
 ## Technology Stack
-- **Python 3.11+**: Modern Python features and performance
+- **Python 3.12+**: Modern Python features and performance
 - **aiohttp**: Asynchronous HTTP client for efficient network requests
 - **Loguru**: Powerful logging library for structured logs and easy configuration
 - **Pydantic v2**: Data validation and settings management
@@ -33,7 +34,7 @@ A modern, asynchronous website monitoring tool that helps administrators detect 
 
 ## 📋 Requirements
 
-- Python 3.11 or higher
+- Python 3.12 or higher
 - [uv](https://docs.astral.sh/uv/) for project management and virtual environments. If you don't have it installed, check the [installation guide](https://docs.astral.sh/uv/getting-started/installation/).
 - Internet connection for monitoring external sites
 - [Make](https://www.gnu.org/software/make/) (optional, for development commands)
@@ -79,6 +80,18 @@ make can be install on Ubuntu with `sudo apt install make`, on macOS with `brew 
 ```yaml
 check_interval: 30  # seconds
 log_file: "site_guard.log"
+# Global retry configuration (applied to all sites unless overridden)
+retry:
+  enabled: true
+  max_attempts: 3
+  strategy: "exponential"  # "fixed", "linear", "exponential"
+  base_delay_seconds: 1.0
+  max_delay_seconds: 30.0
+  backoff_multiplier: 2.0
+  retry_on_status_codes: [429, 500, 502, 503, 504]
+  retry_on_timeout: true
+  retry_on_connection_error: true
+  jitter: true
 sites:
   - url: "https://example.com"
     content_requirement: "Example Domain"
@@ -86,6 +99,14 @@ sites:
   - url: "https://httpbin.org/json"
     content_requirement: "slideshow"
     timeout: 15
+    # Custom retry configuration for this site
+    retry:
+      enabled: true
+      max_attempts: 5  # More attempts for critical site
+      strategy: "exponential"
+      base_delay_seconds: 2.0
+      max_delay_seconds: 60.0
+      retry_on_status_codes: [400, 429, 500, 502, 503, 504]
 ```
 
 2. **Run the monitor**:
