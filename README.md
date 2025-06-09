@@ -167,16 +167,30 @@ sites:
 Site Guard provides colorized console output showing the status of each check:
 
 ```
-2025-06-08 19:11:51.860 | INFO     | site_guard.main:main:49 - Site Guard starting...
-2025-06-08 19:11:51 | INFO     | site_guard.application.monitoring_app:run:39 - Starting site monitoring with 5 sites
-2025-06-08 19:11:51 | INFO     | site_guard.application.monitoring_app:run:40 - Check interval: 30.0 seconds
-2025-06-08 19:11:51 | INFO     | site_guard.application.monitoring_app:run:51 - Starting monitoring round...
-2025-06-08 19:11:52 | INFO     | site_guard.application.monitoring_app:run:59 - PASS ✓: https://www.python.org/ - 229ms
-2025-06-08 19:11:52 | INFO     | site_guard.application.monitoring_app:run:59 - PASS ✓: https://go.dev/ - 397ms
-2025-06-08 19:11:52 | WARNING  | site_guard.application.monitoring_app:run:65 - FAIL ✗: https://www.modular.com/mojo23232 - CONNECTION_ERROR: HTTP 404: Not Found
-2025-06-08 19:11:52 | INFO     | site_guard.application.monitoring_app:run:59 - PASS ✓: https://httpbin.org/html - 704ms
-2025-06-08 19:11:52 | INFO     | site_guard.application.monitoring_app:run:59 - PASS ✓: https://www.rust-lang.org/ - 706ms
-2025-06-08 19:11:52 | INFO     | site_guard.application.monitoring_app:run:68 - Monitoring round completed: 4 successful, 1 failed
+2025-06-09 18:20:58.327 | INFO     | site_guard.main:main:59 - Site Guard starting...
+2025-06-09 18:20:58 | INFO     | site_guard.application.monitoring_app:_log_startup_info:74 - Starting site monitoring with 7 sites
+2025-06-09 18:20:58 | INFO     | site_guard.application.monitoring_app:_log_startup_info:75 - Check interval: 5.0 seconds
+2025-06-09 18:20:58 | DEBUG    | site_guard.application.monitoring_app:_log_startup_info:78 - Monitoring site: https://www.python.org/
+2025-06-09 18:20:58 | DEBUG    | site_guard.application.monitoring_app:_log_startup_info:78 - Monitoring site: https://www.rust-lang.org/
+2025-06-09 18:20:58 | DEBUG    | site_guard.application.monitoring_app:_log_startup_info:78 - Monitoring site: https://go.dev/
+2025-06-09 18:20:58 | DEBUG    | site_guard.application.monitoring_app:_log_startup_info:78 - Monitoring site: https://www.modular.com/mojo
+2025-06-09 18:20:58 | DEBUG    | site_guard.application.monitoring_app:_log_startup_info:78 - Monitoring site: https://httpbin.org/html
+2025-06-09 18:20:58 | DEBUG    | site_guard.application.monitoring_app:_log_startup_info:78 - Monitoring site: https://azure.microsoft.com/
+2025-06-09 18:20:58 | DEBUG    | site_guard.application.monitoring_app:_log_startup_info:78 - Monitoring site: https://httpbin.org/status/500
+2025-06-09 18:20:58 | INFO     | site_guard.application.monitoring_app:_execute_monitoring_round:109 - Starting monitoring round #1...
+2025-06-09 18:20:58 | INFO     | site_guard.application.monitoring_app:_log_success_result:132 - PASS ✓: https://www.python.org/ - 184ms
+2025-06-09 18:20:58 | INFO     | site_guard.application.monitoring_app:_log_success_result:132 - PASS ✓: https://www.modular.com/mojo - 351ms
+2025-06-09 18:20:58 | INFO     | site_guard.application.monitoring_app:_log_success_result:132 - PASS ✓: https://azure.microsoft.com/ - 357ms
+2025-06-09 18:20:58 | INFO     | site_guard.application.monitoring_app:_log_success_result:132 - PASS ✓: https://go.dev/ - 488ms
+2025-06-09 18:20:59 | INFO     | site_guard.application.monitoring_app:_log_success_result:132 - PASS ✓: https://www.rust-lang.org/ - 743ms
+2025-06-09 18:21:01 | WARNING  | site_guard.infrastructure.http.checker:check_site:100 - Retrying https://httpbin.org/status/500 in 1.06s due to error: RetryableHttpError: HTTP 500: HTTP error 500: INTERNAL SERVER ERROR
+2025-06-09 18:21:01 | INFO     | site_guard.application.monitoring_app:_log_success_result:132 - PASS ✓: https://httpbin.org/html - 3551ms
+2025-06-09 18:21:02 | INFO     | site_guard.infrastructure.http.checker:check_site:64 - Retry attempt 2/3 for https://httpbin.org/status/500
+2025-06-09 18:21:04 | WARNING  | site_guard.infrastructure.http.checker:check_site:100 - Retrying https://httpbin.org/status/500 in 1.85s due to error: RetryableHttpError: HTTP 500: HTTP error 500: INTERNAL SERVER ERROR
+2025-06-09 18:21:06 | INFO     | site_guard.infrastructure.http.checker:check_site:64 - Retry attempt 3/3 for https://httpbin.org/status/500
+2025-06-09 18:21:09 | ERROR    | site_guard.infrastructure.http.checker:check_site:110 - All 3 attempts failed for https://httpbin.org/status/500. Last error: RetryableHttpError: HTTP 502: HTTP error 502: Bad Gateway
+2025-06-09 18:21:09 | WARNING  | site_guard.application.monitoring_app:_log_failure_result:136 - FAIL ✗: https://httpbin.org/status/500 - CONNECTION_ERROR: HTTP 502 after 3 attempts: HTTP error 502: Bad Gateway
+2025-06-09 18:21:09 | INFO     | site_guard.application.monitoring_app:_log_round_completion:142 - Round #1 completed in 10.83s: 6 successful, 1 failed
 ```
 
 ### Log Files
