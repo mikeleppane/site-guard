@@ -20,14 +20,26 @@ A modern, asynchronous website monitoring tool that helps administrators detect 
 - **Performance Metrics**: Measures and reports response times for each check
 - **Log Rotation**: Automatic log rotation and compression to manage disk space
 
+## Technology Stack
+- **Python 3.11+**: Modern Python features and performance
+- **aiohttp**: Asynchronous HTTP client for efficient network requests
+- **Loguru**: Powerful logging library for structured logs and easy configuration
+- **Pydantic v2**: Data validation and settings management
+- **Click**: Command-line interface framework for building user-friendly CLI applications
+- **Ruff**: Fast linter and formatter for Python code
+- **pytest**: Testing framework for unit and integration tests
+- **mypy**: Static type checker for Python
+- **Pre-commit**: Git hooks for enforcing code quality standards
+
 ## 📋 Requirements
 
 - Python 3.11 or higher
+- [uv](https://docs.astral.sh/uv/) for project management and virtual environments. If you don't have it installed, check the [installation guide](https://docs.astral.sh/uv/getting-started/installation/).
 - Internet connection for monitoring external sites
+- [Make](https://www.gnu.org/software/make/) (optional, for development commands)
 
 ⚠️ This project has been developed and tested with Python 3.13 on Ubuntu 24.04 LTS. On Windows, it should work as well, but it has not been tested yet.
 
-# emoji for heads-up
 
 ## 🔧 Installation
 
@@ -36,15 +48,14 @@ A modern, asynchronous website monitoring tool that helps administrators detect 
 ```bash
 git clone <repository-url>
 cd site-guard
-pip install -e .
+uv sync --frozen
+uv pip install -e .
 ```
 
 ### Development Setup
 
 ```bash
-git clone <repository-url>
-cd site-guard
-pip install -e ".[dev]"
+uv pip install -e ".[dev]"
 pre-commit install
 ```
 
