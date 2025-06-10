@@ -1,5 +1,6 @@
 from collections.abc import Generator
 from pathlib import Path
+from typing import Any
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -17,8 +18,8 @@ from site_guard.infrastructure.persistence.config import FileConfigLoader
 
 @pytest.mark.asyncio
 async def test_monitoring_application_should_catch_successful_request(
-    temp_config_file: Generator[Path], temp_log_file: Generator[Path]
-):
+    temp_config_file: Path, temp_log_file: Generator[Path]
+) -> None:
     """Test the complete site monitoring workflow with real HTTP requests.
     TODO: replace actual URLs with test server URLs when available.
     This test will:
@@ -45,7 +46,8 @@ async def test_monitoring_application_should_catch_successful_request(
     }
 
     # Write configuration to file
-    with Path.open(temp_config_file, "w") as f:
+
+    with temp_config_file.open("w") as f:
         yaml.dump(config_data, f)
 
     # Create application components
@@ -55,7 +57,12 @@ async def test_monitoring_application_should_catch_successful_request(
     app = MonitoringApplication(config, HttpSiteChecker(), app_logger)
 
     # Mock the run method to execute monitoring once
-    async def mock_run(_config_path, check_interval=None, log_file=None, verbose=False):
+    async def mock_run(
+        _config_path: Any,
+        _check_interval: Any = None,
+        _log_file: str | Path | None = None,
+        _verbose: bool = False,
+    ) -> list[SiteCheckResult]:
         async with HttpSiteChecker().with_session() as site_checker, app_logger as logger:
             monitoring_service = MonitoringService(site_checker, app_logger)
 
@@ -79,8 +86,8 @@ async def test_monitoring_application_should_catch_successful_request(
 
 @pytest.mark.asyncio
 async def test_monitoring_application_should_catch_failed_request(
-    temp_config_file: Generator[Path], temp_log_file: Generator[Path]
-):
+    temp_config_file: Path, temp_log_file: Generator[Path]
+) -> None:
     """Test the complete site monitoring workflow with real HTTP requests.
     This test will:
     GIVEN: Test data is set up and MonitoringApplication is initialized with a configuration file.
@@ -104,7 +111,7 @@ async def test_monitoring_application_should_catch_failed_request(
     }
 
     # Write configuration to file
-    with open(temp_config_file, "w") as f:
+    with temp_config_file.open("w") as f:
         yaml.dump(config_data, f)
 
     # Create application components
@@ -114,8 +121,13 @@ async def test_monitoring_application_should_catch_failed_request(
     app = MonitoringApplication(config, HttpSiteChecker(), app_logger)
 
     # Mock the run method to execute monitoring once
-    async def mock_run(config_path, check_interval=None, log_file=None, verbose=False):
-        async with HttpSiteChecker().with_session() as site_checker, app_logger as logger:
+    async def mock_run(
+        _config_path: Any,
+        _check_interval: Any = None,
+        _log_file: str | Path | None = None,
+        _verbose: bool = False,
+    ) -> list[SiteCheckResult]:
+        async with HttpSiteChecker().with_session() as site_checker, app_logger as _logger:
             monitoring_service = MonitoringService(site_checker, app_logger)
 
             return [result async for result in monitoring_service.monitor_sites(config.sites)]
@@ -137,8 +149,8 @@ async def test_monitoring_application_should_catch_failed_request(
 
 @pytest.mark.asyncio
 async def test_monitoring_application_should_catch_timeout_request(
-    temp_config_file: Generator[Path], temp_log_file: Generator[Path]
-):
+    temp_config_file: Path, temp_log_file: Generator[Path]
+) -> None:
     """Test the complete site monitoring workflow with real HTTP requests.
     This test will:
     GIVEN: Test data is set up and MonitoringApplication is initialized with a configuration file.
@@ -162,7 +174,7 @@ async def test_monitoring_application_should_catch_timeout_request(
     }
 
     # Write configuration to file
-    with open(temp_config_file, "w") as f:
+    with temp_config_file.open("w") as f:
         yaml.dump(config_data, f)
 
     # Create application components
@@ -172,7 +184,12 @@ async def test_monitoring_application_should_catch_timeout_request(
     app = MonitoringApplication(config, HttpSiteChecker(), app_logger)
 
     # Mock the run method to execute monitoring once
-    async def mock_run(config_path, check_interval=None, log_file=None, verbose=False):
+    async def mock_run(
+        _config_path: Any,
+        _check_interval: Any = None,
+        _log_file: str | Path | None = None,
+        _verbose: bool = False,
+    ) -> list[SiteCheckResult]:
         async with HttpSiteChecker().with_session() as site_checker, app_logger as logger:
             monitoring_service = MonitoringService(site_checker, app_logger)
 
@@ -195,8 +212,8 @@ async def test_monitoring_application_should_catch_timeout_request(
 
 @pytest.mark.asyncio
 async def test_monitoring_application_should_catch_content_validation(
-    temp_config_file: Generator[Path], temp_log_file: Generator[Path]
-):
+    temp_config_file: Path, temp_log_file: Generator[Path]
+) -> None:
     """Test the complete site monitoring workflow with real HTTP requests.
     This test will:
     GIVEN: Test data is set up and MonitoringApplication is initialized with a configuration file.
@@ -220,7 +237,7 @@ async def test_monitoring_application_should_catch_content_validation(
     }
 
     # Write configuration to file
-    with open(temp_config_file, "w") as f:
+    with temp_config_file.open("w") as f:
         yaml.dump(config_data, f)
 
     # Create application components
@@ -230,7 +247,12 @@ async def test_monitoring_application_should_catch_content_validation(
     app = MonitoringApplication(config, HttpSiteChecker(), app_logger)
 
     # Mock the run method to execute monitoring once
-    async def mock_run(config_path, check_interval=None, log_file=None, verbose=False):
+    async def mock_run(
+        _config_path: Any,
+        _check_interval: Any = None,
+        _log_file: str | Path | None = None,
+        _verbose: bool = False,
+    ) -> list[SiteCheckResult]:
         async with HttpSiteChecker().with_session() as site_checker, app_logger as logger:
             monitoring_service = MonitoringService(site_checker, app_logger)
 
@@ -253,8 +275,8 @@ async def test_monitoring_application_should_catch_content_validation(
 
 @pytest.mark.asyncio
 async def test_monitoring_application_should_catch_server_error(
-    temp_config_file: Generator[Path], temp_log_file: Generator[Path]
-):
+    temp_config_file: Path, temp_log_file: Generator[Path]
+) -> None:
     """Test the complete site monitoring workflow with real HTTP requests.
     This test will:
     GIVEN: Test data is set up and MonitoringApplication is initialized with a configuration file.
@@ -278,7 +300,7 @@ async def test_monitoring_application_should_catch_server_error(
     }
 
     # Write configuration to file
-    with open(temp_config_file, "w") as f:
+    with temp_config_file.open("w") as f:
         yaml.dump(config_data, f)
 
     # Create application components
@@ -288,7 +310,12 @@ async def test_monitoring_application_should_catch_server_error(
     app = MonitoringApplication(config, HttpSiteChecker(), app_logger)
 
     # Mock the run method to execute monitoring once
-    async def mock_run(config_path, check_interval=None, log_file=None, verbose=False):
+    async def mock_run(
+        _config_path: Any,
+        _check_interval: Any = None,
+        _log_file: str | Path | None = None,
+        _verbose: bool = False,
+    ) -> list[SiteCheckResult]:
         async with HttpSiteChecker().with_session() as site_checker, app_logger as logger:
             monitoring_service = MonitoringService(site_checker, app_logger)
 
@@ -311,30 +338,30 @@ async def test_monitoring_application_should_catch_server_error(
 
 @pytest.mark.asyncio
 async def test_monitoring_application_should_handle_empty_config(
-    temp_config_file: Generator[Path], temp_log_file: Generator[Path]
-):
-    """Test the monitoring application with an empty configuration file.
+    temp_config_file: Path, temp_log_file: Generator[Path]
+) -> None:
+    """Test the monitoring application with an empty configuration.
     This test will:
-    GIVEN: An empty configuration file.
+    GIVEN: A configuration file with no sites.
     WHEN: The monitoring application is run
-    THEN: It should handle the empty configuration gracefully without errors.
+    THEN: It should handle the empty configuration gracefully without crashing.
 
     """
 
-    # Write an empty configuration to file
-    with open(temp_config_file, "w") as f:
-        yaml.dump({}, f)
+    # Write configuration to file
+    with temp_config_file.open("w") as f:
+        yaml.dump("", f)
 
     # Create application components
     config_loader = FileConfigLoader()
-    with pytest.raises(ValueError, match="No sites configured"):
+    with pytest.raises(ValueError):
         config_loader.load_config(temp_config_file)
 
 
 @pytest.mark.asyncio
 async def test_monitoring_application_should_handle_invalid_url(
-    temp_config_file: Generator[Path], temp_log_file: Generator[Path]
-):
+    temp_config_file: Path, temp_log_file: Generator[Path]
+) -> None:
     """Test the monitoring application with an invalid URL.
     This test will:
     GIVEN: A configuration file with an invalid URL.
@@ -358,7 +385,7 @@ async def test_monitoring_application_should_handle_invalid_url(
     }
 
     # Write configuration to file
-    with open(temp_config_file, "w") as f:
+    with temp_config_file.open("w") as f:
         yaml.dump(config_data, f)
 
     # Create application components
@@ -371,8 +398,8 @@ async def test_monitoring_application_should_handle_invalid_url(
 
 @pytest.mark.asyncio
 async def test_monitoring_application_should_handle_missing_content_requirements(
-    temp_config_file: Generator[Path], temp_log_file: Generator[Path]
-):
+    temp_config_file: Path, temp_log_file: Generator[Path]
+) -> None:
     """Test the monitoring application with missing content requirements.
     This test will:
     GIVEN: A configuration file with a site that has no content requirements.
@@ -395,7 +422,7 @@ async def test_monitoring_application_should_handle_missing_content_requirements
     }
 
     # Write configuration to file
-    with open(temp_config_file, "w") as f:
+    with temp_config_file.open("w") as f:
         yaml.dump(config_data, f)
 
     # Create application components

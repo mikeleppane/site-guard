@@ -171,7 +171,7 @@ def test_load_config_file_not_found(file_config_loader: FileConfigLoader) -> Non
         file_config_loader.load_config(non_existent_path)
 
 
-def test_load_config_unsupported_file_format(file_config_loader: FileConfigLoader):
+def test_load_config_unsupported_file_format(file_config_loader: FileConfigLoader) -> None:
     """Test loading configuration from unsupported file format."""
     with tempfile.NamedTemporaryFile(suffix=".txt", mode="w", delete=False) as tmp_file:
         tmp_file.write("some content")
@@ -184,7 +184,7 @@ def test_load_config_unsupported_file_format(file_config_loader: FileConfigLoade
         tmp_path.unlink()
 
 
-def test_load_valid_yaml_config(file_config_loader: FileConfigLoader):
+def test_load_valid_yaml_config(file_config_loader: FileConfigLoader) -> None:
     """Test loading valid YAML configuration."""
     config_data = {
         "check_interval": 30,
@@ -217,7 +217,7 @@ def test_load_valid_yaml_config(file_config_loader: FileConfigLoader):
         tmp_path.unlink()
 
 
-def test_load_valid_json_config(file_config_loader: FileConfigLoader):
+def test_load_valid_json_config(file_config_loader: FileConfigLoader) -> None:
     """Test loading valid JSON configuration."""
     config_data = {
         "check_interval": 45,
@@ -240,7 +240,7 @@ def test_load_valid_json_config(file_config_loader: FileConfigLoader):
         tmp_path.unlink()
 
 
-def test_load_invalid_json_config(file_config_loader: FileConfigLoader):
+def test_load_invalid_json_config(file_config_loader: FileConfigLoader) -> None:
     """Test loading invalid JSON configuration."""
     invalid_json = '{"check_interval": 30, "sites": [}'  # Missing closing bracket
 
@@ -255,7 +255,7 @@ def test_load_invalid_json_config(file_config_loader: FileConfigLoader):
         tmp_path.unlink()
 
 
-def test_load_config_with_global_retry(file_config_loader: FileConfigLoader):
+def test_load_config_with_global_retry(file_config_loader: FileConfigLoader) -> None:
     """Test loading configuration with global retry settings."""
     config_data = {
         "check_interval": 60,

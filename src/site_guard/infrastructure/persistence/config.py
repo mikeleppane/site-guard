@@ -54,6 +54,8 @@ class FileConfigLoader(ConfigLoader):
             raise FileNotFoundError(f"Configuration file not found: {config_path}")
 
         content = config_path.read_text(encoding="utf-8")
+        if not content.strip():
+            raise ValueError(f"Configuration file is empty: {config_path}")
         match config_path.suffix.lower():
             case ".yaml" | ".yml":
                 data = yaml.safe_load(content)
@@ -69,6 +71,10 @@ class FileConfigLoader(ConfigLoader):
                     f"Unsupported configuration file format: {config_path.suffix}. "
                     "Supported formats are .yaml, .yml, and .json."
                 )
+        if not isinstance(data, dict) or not data:
+            raise ValueError(
+                f"Configuration file is empty or invalid: {config_path}. Please check your config file."
+            )
         try:
             return self._parse_config(data)
         except (ValidationError, ValueError) as e:
