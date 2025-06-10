@@ -3,7 +3,7 @@ import fnmatch
 from pydantic import BaseModel, StrictBool, field_validator
 
 
-class ContentRequirement(BaseModel):
+class ContentRequirement(BaseModel, validate_assignment=True):
     """A single content requirement with optional wildcard support."""
 
     pattern: str

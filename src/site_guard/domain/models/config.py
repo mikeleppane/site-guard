@@ -3,6 +3,7 @@ from enum import StrEnum
 
 from pydantic import (
     BaseModel,
+    ConfigDict,
     HttpUrl,
     NonNegativeFloat,
     PositiveFloat,
@@ -70,7 +71,7 @@ class RetryConfig:
         return delay
 
 
-class SiteConfigResult(BaseModel):
+class SiteConfigResult(BaseModel, validate_assignment=True):
     """Result of checking a site configuration."""
 
     success: StrictBool
@@ -79,7 +80,7 @@ class SiteConfigResult(BaseModel):
     model_config = {"frozen": True}
 
 
-@dataclass
+@dataclass(config=ConfigDict(validate_assignment=True))
 class SiteConfig:
     """Configuration for a single site to monitor."""
 
@@ -135,7 +136,7 @@ class SiteConfig:
         return SiteConfigResult(success=success, failed_patterns=failed_patterns)
 
 
-@dataclass
+@dataclass(config=ConfigDict(validate_assignment=True))
 class MonitoringConfig:
     """Overall monitoring configuration."""
 

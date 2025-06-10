@@ -6,7 +6,7 @@ from pydantic import BaseModel, HttpUrl, NonNegativeInt, field_serializer
 from site_guard.domain.models.status import CheckStatus
 
 
-class SiteCheckResult(BaseModel):
+class SiteCheckResult(BaseModel, validate_assignment=True):
     """Result of a site availability check."""
 
     url: HttpUrl
