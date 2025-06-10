@@ -163,7 +163,7 @@ def test_file_config_loader_invalid_model_data(file_config_loader: FileConfigLoa
             file_config_loader.load_config(temp_file)
 
 
-def test_load_config_file_not_found(file_config_loader: FileConfigLoader):
+def test_load_config_file_not_found(file_config_loader: FileConfigLoader) -> None:
     """Test loading configuration from non-existent file."""
     non_existent_path = Path("/non/existent/config.yaml")
 

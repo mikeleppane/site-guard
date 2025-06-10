@@ -5,7 +5,7 @@ import time
 from collections.abc import AsyncIterator, Sequence
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
-from typing import Self
+from typing import Literal, Self
 
 import aiohttp
 from aiohttp import ClientTimeout
@@ -16,6 +16,10 @@ from site_guard.domain.models.content import ContentRequirement
 from site_guard.domain.models.result import SiteCheckResult
 from site_guard.domain.models.status import CheckStatus
 from site_guard.domain.services.checker import SiteChecker
+
+type TStatusCode = (
+    Literal[301, 302, 404, 500, 501, 503, 504, None] | int
+)  # Type for HTTP status codes used in error handling
 
 
 class RetryableHttpError(Exception):
@@ -140,7 +144,6 @@ class HttpSiteChecker(SiteChecker):
                         status_code=response.status,
                         message=f"HTTP error {response.status}: {response.reason}",
                     )
-
                 # Perform content checks
                 content_check_passed = self._check_content_requirements(
                     content, site_config.content_requirements, site_config.require_all_content
@@ -174,6 +177,17 @@ class HttpSiteChecker(SiteChecker):
                 status=CheckStatus.TIMEOUT_ERROR,
                 response_time_ms=response_time_ms,
                 error_message=f"Request timed out after {site_config.timeout} seconds",
+            )
+        except (aiohttp.ServerConnectionError, aiohttp.ServerDisconnectedError) as e:
+            end_time = time.perf_counter()
+            response_time_ms = int((end_time - start_time) * 1000)
+
+            return SiteCheckResult(
+                url=site_config.url,
+                timestamp=start_time,
+                status=CheckStatus.SERVER_ERROR,
+                response_time_ms=response_time_ms,
+                error_message=f"Server connection error: {e!s}",
             )
 
         except aiohttp.ClientConnectorError as e:
@@ -242,12 +256,32 @@ class HttpSiteChecker(SiteChecker):
     ) -> SiteCheckResult:
         """Create an error result after all retry attempts failed."""
 
+        http_status_code: TStatusCode
+
         if isinstance(exception, RetryableHttpError):
-            status = CheckStatus.CONNECTION_ERROR
-            error_message = (
-                f"HTTP {exception.status_code} after {attempts} attempts: {exception.message}"
-            )
-            http_status_code = exception.status_code
+            match exception.status_code:
+                case 404:
+                    status = CheckStatus.NOT_FOUND
+                    error_message = (
+                        f"HTTP 404 Not Found after {attempts} attempts: {exception.message}"
+                    )
+                    http_status_code = exception.status_code
+                case 301 | 302:
+                    status = CheckStatus.REDIRECT_ERROR
+                    error_message = f"HTTP {exception.status_code} Redirect after {attempts} attempts: {exception.message}"
+                    http_status_code = exception.status_code
+                case 500 | 502 | 503 | 504:
+                    status = CheckStatus.SERVER_ERROR
+                    error_message = f"HTTP {exception.status_code} Server Error after {attempts} attempts: {exception.message}"
+                    http_status_code = exception.status_code
+                case _:
+                    status = CheckStatus.CONNECTION_ERROR
+                    error_message = f"HTTP {exception.status_code} after {attempts} attempts: {exception.message}"
+                    http_status_code = exception.status_code
+        elif isinstance(exception, aiohttp.ServerDisconnectedError | aiohttp.ServerConnectionError):
+            status = CheckStatus.SERVER_ERROR
+            error_message = f"Client error after {attempts} attempts: {exception!s}"
+            http_status_code = None
         elif isinstance(exception, asyncio.TimeoutError):
             status = CheckStatus.TIMEOUT_ERROR
             error_message = f"Timeout after {attempts} attempts"
@@ -257,7 +291,7 @@ class HttpSiteChecker(SiteChecker):
             error_message = f"Connection error after {attempts} attempts: {exception!s}"
             http_status_code = None
         else:
-            status = CheckStatus.CONNECTION_ERROR
+            status = CheckStatus.SERVER_ERROR
             error_message = f"Unknown error after {attempts} attempts: {exception!s}"
             http_status_code = None
 

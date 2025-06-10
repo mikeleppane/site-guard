@@ -1,6 +1,5 @@
 """Unit tests for RetryConfig."""
 
-import random
 from unittest.mock import patch
 
 import pytest
