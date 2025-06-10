@@ -107,13 +107,13 @@ def test_content_requirement_immutability() -> None:
 
     # Should not be able to modify fields
     with pytest.raises(ValidationError):
-        req.pattern = "Java"  # type: ignore[misc]
+        req.pattern = "Java"
 
     with pytest.raises(ValidationError):
-        req.use_wildcards = True  # type: ignore[misc]
+        req.use_wildcards = True
 
     with pytest.raises(ValidationError):
-        req.case_sensitive = False  # type: ignore[misc]
+        req.case_sensitive = False
 
 
 def test_very_long_pattern() -> None:

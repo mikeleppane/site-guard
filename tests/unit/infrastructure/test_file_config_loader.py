@@ -1,7 +1,8 @@
 import json
 import tempfile
 from pathlib import Path
-from unittest.mock import patch
+from typing import Any
+from unittest.mock import MagicMock, patch
 
 import pytest
 import yaml
@@ -295,7 +296,7 @@ def test_load_config_with_global_retry(file_config_loader: FileConfigLoader) -> 
         tmp_path.unlink()
 
 
-def test_load_config_no_sites_error(file_config_loader: FileConfigLoader):
+def test_load_config_no_sites_error(file_config_loader: FileConfigLoader) -> None:
     """Test error when no sites are configured."""
     config_data = {"check_interval": 30, "sites": []}
 
@@ -310,7 +311,7 @@ def test_load_config_no_sites_error(file_config_loader: FileConfigLoader):
         tmp_path.unlink()
 
 
-def test_load_config_missing_sites_key(file_config_loader: FileConfigLoader):
+def test_load_config_missing_sites_key(file_config_loader: FileConfigLoader) -> None:
     """Test error when sites key is missing."""
     config_data = {"check_interval": 30}
 
@@ -325,11 +326,11 @@ def test_load_config_missing_sites_key(file_config_loader: FileConfigLoader):
         tmp_path.unlink()
 
 
-def test_parse_site_config_minimal(file_config_loader: FileConfigLoader):
+def test_parse_site_config_minimal(file_config_loader: FileConfigLoader) -> None:
     """Test parsing minimal site configuration."""
     site_data = {"url": "https://example.com", "content_requirements": ["Python"]}
 
-    site_config = file_config_loader._parse_site_config(site_data)
+    site_config = file_config_loader._parse_site_config(site_data)  # noqa: SLF001
 
     assert str(site_config.url) == "https://example.com/"
     assert site_config.name == "https://example.com/"
@@ -339,7 +340,7 @@ def test_parse_site_config_minimal(file_config_loader: FileConfigLoader):
     assert isinstance(site_config.retry_config, RetryConfig)
 
 
-def test_parse_site_config_complete(file_config_loader: FileConfigLoader):
+def test_parse_site_config_complete(file_config_loader: FileConfigLoader) -> None:
     """Test parsing complete site configuration."""
     site_data = {
         "url": "https://test.com",
@@ -349,7 +350,7 @@ def test_parse_site_config_complete(file_config_loader: FileConfigLoader):
         "content_requirements": ["Welcome", {"pattern": "Login", "case_sensitive": False}],
     }
 
-    site_config = file_config_loader._parse_site_config(site_data)
+    site_config = file_config_loader._parse_site_config(site_data)  # noqa: SLF001
 
     assert str(site_config.url) == "https://test.com/"
     assert site_config.name == "Test Site"
@@ -358,11 +359,15 @@ def test_parse_site_config_complete(file_config_loader: FileConfigLoader):
     assert len(site_config.content_requirements) == 2
 
     # Check content requirements
-    assert site_config.content_requirements[0].pattern == "Welcome"
-    assert site_config.content_requirements[1].pattern == "Login"
+    if isinstance(site_config.content_requirements[0], ContentRequirement):
+        assert site_config.content_requirements[0].pattern == "Welcome"
+        assert site_config.content_requirements[0].case_sensitive is True
+    if isinstance(site_config.content_requirements[1], ContentRequirement):
+        assert site_config.content_requirements[1].pattern == "Login"
+        assert site_config.content_requirements[1].case_sensitive is False
 
 
-def test_parse_site_config_with_site_specific_retry(file_config_loader: FileConfigLoader):
+def test_parse_site_config_with_site_specific_retry(file_config_loader: FileConfigLoader) -> None:
     """Test parsing site configuration with site-specific retry settings."""
     global_retry = RetryConfig(
         max_attempts=3, strategy=RetryStrategy.EXPONENTIAL, base_delay_seconds=1.0
@@ -374,7 +379,7 @@ def test_parse_site_config_with_site_specific_retry(file_config_loader: FileConf
         "retry": {"max_attempts": 10, "base_delay_seconds": 0.5, "retry_on_timeout": False},
     }
 
-    site_config = file_config_loader._parse_site_config(site_data, global_retry)
+    site_config = file_config_loader._parse_site_config(site_data, global_retry)  # noqa: SLF001
 
     # Should inherit some global settings and override others
     assert site_config.retry_config.max_attempts == 10  # Overridden
@@ -384,14 +389,16 @@ def test_parse_site_config_with_site_specific_retry(file_config_loader: FileConf
     assert site_config.retry_config.enabled is True  # Inherited
 
 
-def test_parse_site_config_content_requirements_string_format(file_config_loader: FileConfigLoader):
+def test_parse_site_config_content_requirements_string_format(
+    file_config_loader: FileConfigLoader,
+) -> None:
     """Test parsing content requirements in string format."""
     site_data = {
         "url": "https://example.com",
         "content_requirements": ["Hello", "World", "Test"],
     }
 
-    site_config = file_config_loader._parse_site_config(site_data)
+    site_config = file_config_loader._parse_site_config(site_data)  # noqa: SLF001
 
     assert len(site_config.content_requirements) == 3
     assert all(isinstance(req, ContentRequirement) for req in site_config.content_requirements)
@@ -400,7 +407,9 @@ def test_parse_site_config_content_requirements_string_format(file_config_loader
     assert site_config.content_requirements[2].pattern == "Test"
 
 
-def test_parse_site_config_content_requirements_dict_format(file_config_loader: FileConfigLoader):
+def test_parse_site_config_content_requirements_dict_format(
+    file_config_loader: FileConfigLoader,
+) -> None:
     """Test parsing content requirements in dictionary format."""
     site_data = {
         "url": "https://example.com",
@@ -410,14 +419,14 @@ def test_parse_site_config_content_requirements_dict_format(file_config_loader: 
         ],
     }
 
-    site_config = file_config_loader._parse_site_config(site_data)
+    site_config = file_config_loader._parse_site_config(site_data)  # noqa: SLF001
 
     assert len(site_config.content_requirements) == 2
     assert site_config.content_requirements[0].pattern == "Login"
     assert site_config.content_requirements[1].pattern == "dashboard"
 
 
-def test_parse_site_config_mixed_content_requirements(file_config_loader: FileConfigLoader):
+def test_parse_site_config_mixed_content_requirements(file_config_loader: FileConfigLoader) -> None:
     """Test parsing mixed string and dictionary content requirements."""
     site_data = {
         "url": "https://example.com",
@@ -427,18 +436,18 @@ def test_parse_site_config_mixed_content_requirements(file_config_loader: FileCo
         ],
     }
 
-    site_config = file_config_loader._parse_site_config(site_data)
+    site_config = file_config_loader._parse_site_config(site_data)  # noqa: SLF001
 
     assert len(site_config.content_requirements) == 2
     assert site_config.content_requirements[0].pattern == "Simple string"
     assert site_config.content_requirements[1].pattern == "Complex pattern"
 
 
-def test_parse_retry_config_minimal(file_config_loader: FileConfigLoader):
+def test_parse_retry_config_minimal(file_config_loader: FileConfigLoader) -> None:
     """Test parsing minimal retry configuration."""
-    retry_data = {}
+    retry_data: dict[str, Any] = {}
 
-    retry_config = file_config_loader._parse_retry_config(retry_data)
+    retry_config = file_config_loader._parse_retry_config(retry_data)  # noqa: SLF001
 
     # Should use all defaults
     assert retry_config.enabled is True
@@ -453,7 +462,7 @@ def test_parse_retry_config_minimal(file_config_loader: FileConfigLoader):
     assert retry_config.jitter is True
 
 
-def test_parse_retry_config_complete(file_config_loader: FileConfigLoader):
+def test_parse_retry_config_complete(file_config_loader: FileConfigLoader) -> None:
     """Test parsing complete retry configuration."""
     retry_data = {
         "enabled": False,
@@ -468,7 +477,7 @@ def test_parse_retry_config_complete(file_config_loader: FileConfigLoader):
         "jitter": False,
     }
 
-    retry_config = file_config_loader._parse_retry_config(retry_data)
+    retry_config = file_config_loader._parse_retry_config(retry_data)  # noqa: SLF001
 
     assert retry_config.enabled is False
     assert retry_config.max_attempts == 5
@@ -482,7 +491,7 @@ def test_parse_retry_config_complete(file_config_loader: FileConfigLoader):
     assert retry_config.jitter is False
 
 
-def test_parse_retry_config_strategy_case_insensitive(file_config_loader: FileConfigLoader):
+def test_parse_retry_config_strategy_case_insensitive(file_config_loader: FileConfigLoader) -> None:
     """Test that retry strategy parsing is case insensitive."""
     test_cases = [
         ("exponential", RetryStrategy.EXPONENTIAL),
@@ -496,23 +505,23 @@ def test_parse_retry_config_strategy_case_insensitive(file_config_loader: FileCo
 
     for strategy_str, expected_strategy in test_cases:
         retry_data = {"strategy": strategy_str}
-        retry_config = file_config_loader._parse_retry_config(retry_data)
+        retry_config = file_config_loader._parse_retry_config(retry_data)  # noqa: SLF001
         assert retry_config.strategy == expected_strategy
 
 
-def test_parse_retry_config_invalid_strategy(file_config_loader: FileConfigLoader):
+def test_parse_retry_config_invalid_strategy(file_config_loader: FileConfigLoader) -> None:
     """Test error handling for invalid retry strategy."""
     retry_data = {"strategy": "invalid_strategy"}
 
     with pytest.raises(InvalidRetryStrategyError, match="Invalid retry strategy: invalid_strategy"):
-        file_config_loader._parse_retry_config(retry_data)
+        file_config_loader._parse_retry_config(retry_data)  # noqa: SLF001
 
 
-def test_parse_retry_config_partial_override(file_config_loader: FileConfigLoader):
+def test_parse_retry_config_partial_override(file_config_loader: FileConfigLoader) -> None:
     """Test parsing retry configuration with partial overrides."""
     retry_data = {"max_attempts": 7, "base_delay_seconds": 3.0, "retry_on_timeout": False}
 
-    retry_config = file_config_loader._parse_retry_config(retry_data)
+    retry_config = file_config_loader._parse_retry_config(retry_data)  # noqa: SLF001
 
     # Overridden values
     assert retry_config.max_attempts == 7
@@ -525,7 +534,7 @@ def test_parse_retry_config_partial_override(file_config_loader: FileConfigLoade
     assert retry_config.max_delay_seconds == 30.0
 
 
-def test_load_complex_config_yaml(file_config_loader: FileConfigLoader):
+def test_load_complex_config_yaml(file_config_loader: FileConfigLoader) -> None:
     """Test loading complex configuration from YAML."""
     config_data = {
         "check_interval": 45,
@@ -595,7 +604,7 @@ def test_load_complex_config_yaml(file_config_loader: FileConfigLoader):
         tmp_path.unlink()
 
 
-def test_load_config_yml_extension(file_config_loader: FileConfigLoader):
+def test_load_config_yml_extension(file_config_loader: FileConfigLoader) -> None:
     """Test loading configuration from .yml file."""
     config_data = {
         "check_interval": 30,
@@ -614,7 +623,7 @@ def test_load_config_yml_extension(file_config_loader: FileConfigLoader):
         tmp_path.unlink()
 
 
-def test_load_config_with_defaults(file_config_loader: FileConfigLoader):
+def test_load_config_with_defaults(file_config_loader: FileConfigLoader) -> None:
     """Test loading configuration that relies on default values."""
     config_data = {"sites": [{"url": "https://minimal.com", "content_requirements": ["Minimal"]}]}
 
@@ -642,7 +651,9 @@ def test_load_config_with_defaults(file_config_loader: FileConfigLoader):
 
 
 @patch("pathlib.Path.exists")
-def test_load_config_file_not_found_mocked(mock_exists, file_config_loader: FileConfigLoader):
+def test_load_config_file_not_found_mocked(
+    mock_exists: MagicMock, file_config_loader: FileConfigLoader
+) -> None:
     """Test file not found error with mocked path."""
     mock_exists.return_value = False
 
@@ -655,8 +666,8 @@ def test_load_config_file_not_found_mocked(mock_exists, file_config_loader: File
 @patch("pathlib.Path.read_text")
 @patch("pathlib.Path.exists")
 def test_load_config_yaml_parse_error(
-    mock_exists, mock_read_text, file_config_loader: FileConfigLoader
-):
+    mock_exists: MagicMock, mock_read_text: MagicMock, file_config_loader: FileConfigLoader
+) -> None:
     """Test YAML parsing error."""
     mock_exists.return_value = True
     mock_read_text.return_value = "invalid: yaml: content: ["
@@ -664,25 +675,25 @@ def test_load_config_yaml_parse_error(
     config_path = Path("/fake/config.yaml")
 
     # YAML parsing error should be propagated
-    with pytest.raises(Exception):  # yaml.YAMLError or similar
+    with pytest.raises(Exception):  # yaml.YAMLError or similar  # noqa: B017
         file_config_loader.load_config(config_path)
 
 
-def test_parse_config_validation_error(file_config_loader: FileConfigLoader):
+def test_parse_config_validation_error(file_config_loader: FileConfigLoader) -> None:
     """Test Pydantic validation error handling."""
     # Missing required URL field
     config_data = {"sites": [{"name": "Missing URL"}]}
 
-    with pytest.raises(Exception):  # Should raise validation error
-        file_config_loader._parse_config(config_data)
+    with pytest.raises(Exception):  # Should raise validation error  # noqa: B017
+        file_config_loader._parse_config(config_data)  # noqa: SLF001
 
 
-def test_parse_retry_config_invalid_strategy_detailed(file_config_loader: FileConfigLoader):
+def test_parse_retry_config_invalid_strategy_detailed(file_config_loader: FileConfigLoader) -> None:
     """Test detailed error message for invalid retry strategy."""
     retry_data = {"strategy": "unknown_strategy"}
 
     with pytest.raises(InvalidRetryStrategyError) as exc_info:
-        file_config_loader._parse_retry_config(retry_data)
+        file_config_loader._parse_retry_config(retry_data)  # noqa: SLF001
 
     error_message = str(exc_info.value)
     assert "Invalid retry strategy: unknown_strategy" in error_message
@@ -691,7 +702,9 @@ def test_parse_retry_config_invalid_strategy_detailed(file_config_loader: FileCo
     assert "FIXED" in error_message
 
 
-def test_parse_site_config_invalid_content_requirement_type(file_config_loader: FileConfigLoader):
+def test_parse_site_config_invalid_content_requirement_type(
+    file_config_loader: FileConfigLoader,
+) -> None:
     """Test error handling for invalid content requirement types."""
     site_data = {
         "url": "https://example.com",
@@ -700,54 +713,54 @@ def test_parse_site_config_invalid_content_requirement_type(file_config_loader: 
 
     # Should handle gracefully or raise appropriate error
     # The exact behavior depends on ContentRequirement implementation
-    with pytest.raises(Exception):
-        file_config_loader._parse_site_config(site_data)
+    with pytest.raises(Exception):  # noqa: B017
+        file_config_loader._parse_site_config(site_data)  # noqa: SLF001
 
 
-def test_load_config_empty_file(file_config_loader: FileConfigLoader):
+def test_load_config_empty_file(file_config_loader: FileConfigLoader) -> None:
     """Test loading empty configuration file."""
     with tempfile.NamedTemporaryFile(suffix=".yaml", mode="w", delete=False) as tmp_file:
         tmp_file.write("")
         tmp_path = Path(tmp_file.name)
 
     try:
-        with pytest.raises(Exception):  # Should fail due to missing sites
+        with pytest.raises(Exception):  # Should fail due to missing sites  # noqa: B017
             file_config_loader.load_config(tmp_path)
     finally:
         tmp_path.unlink()
 
 
-def test_load_config_null_content(file_config_loader: FileConfigLoader):
+def test_load_config_null_content(file_config_loader: FileConfigLoader) -> None:
     """Test loading configuration file with null content."""
     with tempfile.NamedTemporaryFile(suffix=".yaml", mode="w", delete=False) as tmp_file:
         tmp_file.write("null")
         tmp_path = Path(tmp_file.name)
 
     try:
-        with pytest.raises(Exception):  # Should fail
+        with pytest.raises(Exception):  # Should fail  # noqa: B017
             file_config_loader.load_config(tmp_path)
     finally:
         tmp_path.unlink()
 
 
-def test_parse_site_config_empty_content_requirements(file_config_loader: FileConfigLoader):
+def test_parse_site_config_empty_content_requirements(file_config_loader: FileConfigLoader) -> None:
     """Test parsing site with empty content requirements list."""
     site_data = {"url": "https://example.com", "content_requirements": []}
 
     with pytest.raises(ValidationError):
-        file_config_loader._parse_site_config(site_data)
+        file_config_loader._parse_site_config(site_data)  # noqa: SLF001
 
 
-def test_parse_retry_config_empty_status_codes(file_config_loader: FileConfigLoader):
+def test_parse_retry_config_empty_status_codes(file_config_loader: FileConfigLoader) -> None:
     """Test parsing retry config with empty status codes list."""
-    retry_data = {"retry_on_status_codes": []}
+    retry_data: dict[str, list[str | int]] = {"retry_on_status_codes": []}
 
-    retry_config = file_config_loader._parse_retry_config(retry_data)
+    retry_config = file_config_loader._parse_retry_config(retry_data)  # noqa: SLF001
 
     assert retry_config.retry_on_status_codes == []
 
 
-def test_load_config_case_insensitive_file_extensions(file_config_loader: FileConfigLoader):
+def test_load_config_case_insensitive_file_extensions(file_config_loader: FileConfigLoader) -> None:
     """Test that file extension matching is case insensitive."""
     config_data = {"sites": [{"url": "https://example.com", "content_requirements": ["Test"]}]}
 

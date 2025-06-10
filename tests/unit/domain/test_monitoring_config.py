@@ -1,5 +1,5 @@
 import pytest
-from pydantic import ValidationError
+from pydantic import HttpUrl, ValidationError
 
 from site_guard.domain.models.config import MonitoringConfig, SiteConfig
 
@@ -20,7 +20,7 @@ def test_create_monitoring_config() -> None:
 
 def test_default_values() -> None:
     """Test default values in monitoring configuration."""
-    sites = [SiteConfig(url="https://example.com", content_requirements=["test"])]
+    sites = [SiteConfig(url=HttpUrl("https://example.com"), content_requirements=["test"])]
     config = MonitoringConfig(sites=sites)
 
     assert config.check_interval == 60  # default
@@ -67,4 +67,4 @@ def test_with_overridden_interval_invalid() -> None:
     with pytest.raises(ValueError):
         config.with_overridden_interval(-1)  # Zero interval
     with pytest.raises(ValueError):
-        config.with_overridden_interval("invalid")  # type: ignore[arg-type]
+        config.with_overridden_interval("invalid")

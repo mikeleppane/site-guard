@@ -1,15 +1,11 @@
-import asyncio
 import tempfile
-from collections.abc import AsyncGenerator, Generator
+from collections.abc import Generator, Iterator
 from datetime import datetime
 from pathlib import Path
-from typing import Any
 from unittest.mock import AsyncMock
 
 import pytest
 import yaml
-from aiohttp import web
-from aiohttp.test_utils import TestClient, TestServer
 from pydantic import HttpUrl
 
 from site_guard.domain.models.config import MonitoringConfig, SiteConfig
@@ -49,43 +45,7 @@ def sample_check_result() -> SiteCheckResult:
 
 
 @pytest.fixture
-async def mock_web_server(aiohttp_client: TestClient) -> AsyncGenerator[TestClient]:
-    """Create a mock web server for testing."""
-
-    async def success_handler(request: Any) -> web.Response:
-        """Handler that returns successful content."""
-        return web.Response(
-            text="<html><body>Welcome to Python programming site</body></html>",
-            content_type="text/html",
-        )
-
-    async def error_handler(request: Any) -> web.Response:
-        """Handler that returns 404 error."""
-        return web.Response(status=404, text="Not Found")
-
-    async def slow_handler(request: Any) -> web.Response:
-        """Handler that simulates slow response."""
-        await asyncio.sleep(2)
-        return web.Response(text="Slow response with Python content")
-
-    async def missing_content_handler(request: Any) -> web.Response:
-        """Handler that returns content without required patterns."""
-        return web.Response(
-            text="<html><body>This is a Java programming site</body></html>",
-            content_type="text/html",
-        )
-
-    app = web.Application()
-    app.router.add_get("/success", success_handler)
-    app.router.add_get("/error", error_handler)
-    app.router.add_get("/slow", slow_handler)
-    app.router.add_get("/missing-content", missing_content_handler)
-
-    return await aiohttp_client(app)  # type: ignore[no-any-return]
-
-
-@pytest.fixture
-def temp_config_file() -> Generator[Path]:
+def temp_config_file() -> Iterator[Path]:
     """Create a temporary configuration file."""
     try:
         with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
@@ -146,58 +106,3 @@ def sample_sites() -> list[SiteConfig]:
             timeout=15,
         ),
     ]
-
-
-@pytest.fixture
-async def test_server() -> AsyncGenerator[TestClient]:
-    """Create a test HTTP server with client."""
-
-    async def success_handler(request: Any) -> web.Response:
-        """Handler that returns successful content."""
-        return web.Response(
-            text="<html><body>Welcome to Python programming site</body></html>",
-            content_type="text/html",
-        )
-
-    async def error_handler(request: Any) -> web.Response:
-        """Handler that returns 404 error."""
-        return web.Response(status=404, text="Not Found")
-
-    async def slow_handler(request: Any) -> web.Response:
-        """Handler that simulates slow response."""
-        await asyncio.sleep(2)
-        return web.Response(text="Slow response with Python content")
-
-    async def missing_content_handler(request: Any) -> web.Response:
-        """Handler that returns content without required patterns."""
-        return web.Response(
-            text="<html><body>This is a Java programming site</body></html>",
-            content_type="text/html",
-        )
-
-    async def delay_handler(request: Any) -> web.Response:
-        """Handler with configurable delay."""
-        delay = float(request.query.get("delay", 0))
-        await asyncio.sleep(delay)
-        return web.Response(text=f"Python response after {delay}s delay")
-
-    # Create the web application
-    app = web.Application()
-    app.router.add_get("/success", success_handler)
-    app.router.add_get("/error", error_handler)
-    app.router.add_get("/slow", slow_handler)
-    app.router.add_get("/missing-content", missing_content_handler)
-    app.router.add_get("/delay", delay_handler)
-
-    # Create test server and client
-    server = TestServer(app, port=8080)
-    client = TestClient(server, loop=asyncio.get_event_loop())
-
-    try:
-        # Start the server
-        await server.start_server()
-        yield client
-    finally:
-        # Cleanup
-        await client.close()
-        await server.close()

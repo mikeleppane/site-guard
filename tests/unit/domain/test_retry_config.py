@@ -1,13 +1,13 @@
 """Unit tests for RetryConfig."""
 
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 
 from site_guard.domain.models.config import RetryConfig, RetryStrategy
 
 
-def test_default_initialization():
+def test_default_initialization() -> None:
     """Test RetryConfig with default values."""
     config = RetryConfig()
 
@@ -23,7 +23,7 @@ def test_default_initialization():
     assert config.jitter is True
 
 
-def test_custom_initialization():
+def test_custom_initialization() -> None:
     """Test RetryConfig with custom values."""
     custom_status_codes = [400, 429, 500, 502, 503, 504]
 
@@ -52,13 +52,13 @@ def test_custom_initialization():
     assert config.jitter is False
 
 
-def test_validation_max_delay_less_than_base_delay():
+def test_validation_max_delay_less_than_base_delay() -> None:
     """Test validation when max_delay_seconds < base_delay_seconds."""
     with pytest.raises(ValueError, match="max_delay_seconds must be >= base_delay_seconds"):
         RetryConfig(base_delay_seconds=10.0, max_delay_seconds=5.0)
 
 
-def test_validation_max_delay_equal_to_base_delay():
+def test_validation_max_delay_equal_to_base_delay() -> None:
     """Test validation when max_delay_seconds == base_delay_seconds."""
     # Should not raise an exception
     config = RetryConfig(base_delay_seconds=5.0, max_delay_seconds=5.0)
@@ -66,7 +66,7 @@ def test_validation_max_delay_equal_to_base_delay():
     assert config.max_delay_seconds == 5.0
 
 
-def test_pydantic_validation_positive_int():
+def test_pydantic_validation_positive_int() -> None:
     """Test Pydantic validation for PositiveInt fields."""
     with pytest.raises(ValueError):
         RetryConfig(max_attempts=0)
@@ -75,7 +75,7 @@ def test_pydantic_validation_positive_int():
         RetryConfig(max_attempts=-1)
 
 
-def test_pydantic_validation_non_negative_float():
+def test_pydantic_validation_non_negative_float() -> None:
     """Test Pydantic validation for NonNegativeFloat fields."""
     with pytest.raises(ValueError):
         RetryConfig(base_delay_seconds=-1.0)
@@ -88,7 +88,7 @@ def test_pydantic_validation_non_negative_float():
     assert config.base_delay_seconds == 0.0
 
 
-def test_pydantic_validation_positive_float():
+def test_pydantic_validation_positive_float() -> None:
     """Test Pydantic validation for PositiveFloat fields."""
     with pytest.raises(ValueError):
         RetryConfig(backoff_multiplier=0.0)
@@ -97,7 +97,7 @@ def test_pydantic_validation_positive_float():
         RetryConfig(backoff_multiplier=-1.0)
 
 
-def test_pydantic_validation_strict_bool():
+def test_pydantic_validation_strict_bool() -> None:
     """Test Pydantic validation for StrictBool fields."""
     # Valid boolean values
     config = RetryConfig(enabled=True, jitter=False)
@@ -112,7 +112,7 @@ def test_pydantic_validation_strict_bool():
         RetryConfig(jitter=1)  # Integer should be rejected
 
 
-def test_calculate_delay_zero_or_negative_attempt():
+def test_calculate_delay_zero_or_negative_attempt() -> None:
     """Test delay calculation for zero or negative attempt numbers."""
     config = RetryConfig()
 
@@ -121,7 +121,7 @@ def test_calculate_delay_zero_or_negative_attempt():
     assert config.calculate_delay(-5) == 0.0
 
 
-def test_calculate_delay_fixed_strategy():
+def test_calculate_delay_fixed_strategy() -> None:
     """Test delay calculation with FIXED strategy."""
     config = RetryConfig(strategy=RetryStrategy.FIXED, base_delay_seconds=3.0, jitter=False)
 
@@ -132,7 +132,7 @@ def test_calculate_delay_fixed_strategy():
     assert config.calculate_delay(10) == 3.0
 
 
-def test_calculate_delay_linear_strategy():
+def test_calculate_delay_linear_strategy() -> None:
     """Test delay calculation with LINEAR strategy."""
     config = RetryConfig(
         strategy=RetryStrategy.LINEAR, base_delay_seconds=2.0, max_delay_seconds=100.0, jitter=False
@@ -144,7 +144,7 @@ def test_calculate_delay_linear_strategy():
     assert config.calculate_delay(5) == 10.0  # 2.0 * 5
 
 
-def test_calculate_delay_exponential_strategy():
+def test_calculate_delay_exponential_strategy() -> None:
     """Test delay calculation with EXPONENTIAL strategy."""
     config = RetryConfig(
         strategy=RetryStrategy.EXPONENTIAL,
@@ -161,7 +161,7 @@ def test_calculate_delay_exponential_strategy():
     assert config.calculate_delay(5) == 16.0  # 1.0 * (2.0 ^ 4)
 
 
-def test_calculate_delay_exponential_with_custom_multiplier():
+def test_calculate_delay_exponential_with_custom_multiplier() -> None:
     """Test exponential delay with custom backoff multiplier."""
     config = RetryConfig(
         strategy=RetryStrategy.EXPONENTIAL,
@@ -177,7 +177,7 @@ def test_calculate_delay_exponential_with_custom_multiplier():
     assert config.calculate_delay(4) == 54.0  # 2.0 * (3.0 ^ 3)
 
 
-def test_calculate_delay_max_delay_limit():
+def test_calculate_delay_max_delay_limit() -> None:
     """Test that delay is capped at max_delay_seconds."""
     config = RetryConfig(
         strategy=RetryStrategy.EXPONENTIAL,
@@ -195,7 +195,7 @@ def test_calculate_delay_max_delay_limit():
     assert config.calculate_delay(6) == 10.0  # Capped at max (would be 32.0)
 
 
-def test_calculate_delay_linear_with_max_limit():
+def test_calculate_delay_linear_with_max_limit() -> None:
     """Test linear strategy with max delay limit."""
     config = RetryConfig(
         strategy=RetryStrategy.LINEAR, base_delay_seconds=5.0, max_delay_seconds=12.0, jitter=False
@@ -208,7 +208,7 @@ def test_calculate_delay_linear_with_max_limit():
 
 
 @patch("random.uniform")
-def test_calculate_delay_with_jitter(mock_uniform):
+def test_calculate_delay_with_jitter(mock_uniform: MagicMock) -> None:
     """Test delay calculation with jitter enabled."""
     # Mock random.uniform to return a predictable value
     mock_uniform.return_value = 1.1  # 110% of original delay
@@ -223,7 +223,7 @@ def test_calculate_delay_with_jitter(mock_uniform):
 
 
 @patch("random.uniform")
-def test_calculate_delay_jitter_range(mock_uniform):
+def test_calculate_delay_jitter_range(mock_uniform: MagicMock) -> None:
     """Test that jitter uses correct range."""
     mock_uniform.return_value = 0.9  # 90% of original delay
 
@@ -240,7 +240,7 @@ def test_calculate_delay_jitter_range(mock_uniform):
     mock_uniform.assert_called_once_with(0.8, 1.2)
 
 
-def test_calculate_delay_without_jitter():
+def test_calculate_delay_without_jitter() -> None:
     """Test delay calculation with jitter disabled."""
     config = RetryConfig(
         strategy=RetryStrategy.EXPONENTIAL,
@@ -257,7 +257,7 @@ def test_calculate_delay_without_jitter():
     assert delay1 == delay2 == delay3 == 4.0
 
 
-def test_calculate_delay_jitter_with_max_limit():
+def test_calculate_delay_jitter_with_max_limit() -> None:
     """Test that jitter is applied before max delay limit."""
     with patch("random.uniform", return_value=1.2):  # 120% jitter
         config = RetryConfig(
@@ -273,7 +273,7 @@ def test_calculate_delay_jitter_with_max_limit():
         assert delay == 12.0
 
 
-def test_very_small_delays():
+def test_very_small_delays() -> None:
     """Test with very small delay values."""
     config = RetryConfig(base_delay_seconds=0.001, max_delay_seconds=0.01, jitter=False)
 
@@ -281,7 +281,7 @@ def test_very_small_delays():
     assert delay == 0.001
 
 
-def test_very_large_attempts():
+def test_very_large_attempts() -> None:
     """Test with very large attempt numbers."""
     config = RetryConfig(
         strategy=RetryStrategy.EXPONENTIAL,
@@ -296,7 +296,7 @@ def test_very_large_attempts():
     assert delay == 60.0
 
 
-def test_backoff_multiplier_one():
+def test_backoff_multiplier_one() -> None:
     """Test exponential strategy with backoff multiplier of 1.0."""
     config = RetryConfig(
         strategy=RetryStrategy.EXPONENTIAL,
@@ -311,7 +311,7 @@ def test_backoff_multiplier_one():
     assert config.calculate_delay(5) == 5.0
 
 
-def test_frozen_dataclass():
+def test_frozen_dataclass() -> None:
     """Test that RetryConfig is frozen (immutable)."""
     config = RetryConfig()
 
@@ -325,7 +325,7 @@ def test_frozen_dataclass():
         config.strategy = RetryStrategy.LINEAR
 
 
-def test_default_factory_independence():
+def test_default_factory_independence() -> None:
     """Test that default factory creates independent lists."""
     config1 = RetryConfig()
     config2 = RetryConfig()
@@ -339,14 +339,14 @@ def test_default_factory_independence():
     assert 999 not in config2.retry_on_status_codes
 
 
-def test_enum_values():
+def test_enum_values() -> None:
     """Test that enum has correct values."""
     assert RetryStrategy.FIXED == "FIXED"
     assert RetryStrategy.EXPONENTIAL == "EXPONENTIAL"
     assert RetryStrategy.LINEAR == "LINEAR"
 
 
-def test_enum_membership():
+def test_enum_membership() -> None:
     """Test enum membership checks."""
     assert "FIXED" in RetryStrategy
     assert "EXPONENTIAL" in RetryStrategy
@@ -354,7 +354,7 @@ def test_enum_membership():
     assert "INVALID" not in RetryStrategy
 
 
-def test_enum_iteration():
+def test_enum_iteration() -> None:
     """Test iterating over enum values."""
     strategies = list(RetryStrategy)
     assert len(strategies) == 3
@@ -363,7 +363,7 @@ def test_enum_iteration():
     assert RetryStrategy.LINEAR in strategies
 
 
-def test_typical_web_service_config():
+def test_typical_web_service_config() -> None:
     """Test configuration suitable for typical web service monitoring."""
     config = RetryConfig(
         enabled=True,
@@ -397,7 +397,7 @@ def test_typical_web_service_config():
     assert config.calculate_delay(3) == 4.0
 
 
-def test_aggressive_retry_config():
+def test_aggressive_retry_config() -> None:
     """Test configuration for critical services requiring aggressive retries."""
     config = RetryConfig(
         enabled=True,
@@ -418,7 +418,7 @@ def test_aggressive_retry_config():
     assert len(config.retry_on_status_codes) == 8  # Including client errors
 
 
-def test_conservative_retry_config():
+def test_conservative_retry_config() -> None:
     """Test configuration for non-critical services with conservative retries."""
     config = RetryConfig(
         enabled=True,

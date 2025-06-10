@@ -63,7 +63,7 @@ async def test_monitoring_application_should_catch_successful_request(
         _log_file: str | Path | None = None,
         _verbose: bool = False,
     ) -> list[SiteCheckResult]:
-        async with HttpSiteChecker().with_session() as site_checker, app_logger as logger:
+        async with HttpSiteChecker().with_session() as site_checker, app_logger as _logger:
             monitoring_service = MonitoringService(site_checker, app_logger)
 
             return [result async for result in monitoring_service.monitor_sites(config.sites)]
@@ -190,7 +190,7 @@ async def test_monitoring_application_should_catch_timeout_request(
         _log_file: str | Path | None = None,
         _verbose: bool = False,
     ) -> list[SiteCheckResult]:
-        async with HttpSiteChecker().with_session() as site_checker, app_logger as logger:
+        async with HttpSiteChecker().with_session() as site_checker, app_logger as _logger:
             monitoring_service = MonitoringService(site_checker, app_logger)
 
             return [result async for result in monitoring_service.monitor_sites(config.sites)]
@@ -253,7 +253,7 @@ async def test_monitoring_application_should_catch_content_validation(
         _log_file: str | Path | None = None,
         _verbose: bool = False,
     ) -> list[SiteCheckResult]:
-        async with HttpSiteChecker().with_session() as site_checker, app_logger as logger:
+        async with HttpSiteChecker().with_session() as site_checker, app_logger as _logger:
             monitoring_service = MonitoringService(site_checker, app_logger)
 
             return [result async for result in monitoring_service.monitor_sites(config.sites)]
@@ -316,7 +316,7 @@ async def test_monitoring_application_should_catch_server_error(
         _log_file: str | Path | None = None,
         _verbose: bool = False,
     ) -> list[SiteCheckResult]:
-        async with HttpSiteChecker().with_session() as site_checker, app_logger as logger:
+        async with HttpSiteChecker().with_session() as site_checker, app_logger as _logger:
             monitoring_service = MonitoringService(site_checker, app_logger)
 
             return [result async for result in monitoring_service.monitor_sites(config.sites)]
@@ -338,7 +338,8 @@ async def test_monitoring_application_should_catch_server_error(
 
 @pytest.mark.asyncio
 async def test_monitoring_application_should_handle_empty_config(
-    temp_config_file: Path, temp_log_file: Generator[Path]
+    temp_config_file: Path,
+    temp_log_file: Generator[Path],  # noqa: ARG001
 ) -> None:
     """Test the monitoring application with an empty configuration.
     This test will:
